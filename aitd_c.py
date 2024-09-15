@@ -279,6 +279,9 @@ while True:
                 Note(getword("exitpj"))
                 os.chdir(os.path.join(os.getcwd(), ".."))
                 nowproject = ""
+            ################################################################
+            # HERE!!!!!!!!                                                 #
+            ################################################################
             continue
         Error(getword("invcmd"))
         continue
