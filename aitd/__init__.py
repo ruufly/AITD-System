@@ -17,7 +17,7 @@ def FASTA_parser(data):
 setattr(xerlist.ParserList, "aitd-fasta", FASTA_parser)
 
 
-def needleman_wunsch(seq1, seq2, match=2, mismatch=-1, gap=-1):
+def needleman_wunsch(seq1, seq2, match=5, mismatch=-4, gap=-2):
     """
     Needleman-Wunsch 算法实现
     :param seq1: 第一个序列
