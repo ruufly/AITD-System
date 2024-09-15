@@ -1,0 +1,24 @@
+createdict: 正在创建文件夹
+dictnotcreate: 无法创建文件夹
+createfile: 正在创建文件
+filenotcreate: 无法创建文件
+notpjdict: 无效的项目地址。
+
+synerr: 语法错误！
+usage: 用法
+
+done: 完成。
+
+mkpj: 正在构建项目……
+exitpj: 已成功退出该项目。
+pjcreated: 项目构建完成。
+warnbasic: 请为您的项目进行基础设置。
+invcmd: 无效命令。
+
+langset: 您的语言已被设置为
+
+notsetting: 没有这样的设置项。
+
+wpj: 这不是一个可识别的项目。
+
+exit: 您已成功退出本软件。

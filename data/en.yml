@@ -1,0 +1,24 @@
+createdict: Creating directory
+dictnotcreate: Could not create directory
+createfile: Creating file
+filenotcreate: Could not create file
+notpjdict: Project directory not found.
+
+synerr: Syntax error!
+usage: Usage
+
+done: done.
+
+mkpj: Making the project...
+exitpj: You have exited this project successfully.
+pjcreated: The project was created.
+warnbasic: Please set the basic settings for this project first.
+invcmd: Invalid command.
+
+langset: The language you are using has been set to
+
+notsetting: No such setting item.
+
+wpj: This is not a recognizable project.
+
+exit: You have exited this system successfully.
