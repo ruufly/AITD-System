@@ -1,6 +1,9 @@
 import os, sys
 from . import error
 from . import xerlist
+import matplotlib.pyplot as plt
+import numpy as np
+import copy
 
 
 def FASTA_parser(data):
@@ -80,6 +83,19 @@ def needleman_wunsch(seq1, seq2, match=5, mismatch=-4, gap=-2):
 
 setattr(xerlist.ComparatorList, "needleman-wunsch", needleman_wunsch)
 
+
+def process_NW(seq1, seq2):
+    alignment = getattr(xerlist.ComparatorList, "needleman-wunsch")(seq1, seq2)[1]
+    ans = len(alignment)
+
+    for i in alignment:
+        if i[0] == i[1]:
+            ans -= 1
+    return ans
+
+
+setattr(xerlist.ProcessorList, "needleman-wunsch", process_NW)
+
 if __name__ == "__main__":
     seq1 = "GATTACA"
     seq2 = "GCATGCU"
@@ -122,6 +138,151 @@ class Sequence(object):
 def compare(a, b, comparator):
     return comparator(a.sequence, b.sequence)[0]
 
+
+def getMatrixMin(matrix):
+    m, n = np.shape(matrix)
+    matrixMin = matrix[0][0]
+    y = 0
+    x = 1
+    for i in range(m):
+        for j in range(i, n):
+            if matrix[j][i] < matrixMin:
+                matrixMin = matrix[j][i]
+                x = j + 1
+                y = i
+    return x, y, matrixMin
+
+
+def createNdm(dic, odm, auxiliaryList, treeMark):
+    if len(odm) == 0:
+        return auxiliaryList, treeMark
+    x, y, matrixMin = getMatrixMin(odm)
+
+    dic1 = copy.deepcopy(dic)
+    dic1.pop(list(dic.keys())[list(dic.values()).index(x)])
+    dic1.pop(list(dic.keys())[list(dic.values()).index(y)])
+    dic1len = len(dic1)
+    ndm = np.zeros((dic1len, dic1len))
+    index = 0
+    for s in dic1.keys():
+        if x < dic1[s]:
+            d1 = odm[dic1[s] - 1][x]
+        else:
+            d1 = odm[x - 1][dic1[s]]
+        if y < dic1[s]:
+            d2 = odm[dic1[s] - 1][y]
+        else:
+            d2 = odm[y - 1][dic1[s]]
+        ndm[dic1len - 1][index] = (d1 + d2) / 2
+        dic1[s] = index
+        index += 1
+    for i in range(dic1len):
+        for j in range(i + 1, dic1len):
+            ndm[j - 1][i] = odm[
+                dic[list(dic1.keys())[list(dic1.values()).index(j)]] - 1
+            ][dic[list(dic1.keys())[list(dic1.values()).index(i)]]]
+    newSquence = (
+        list(dic.keys())[list(dic.values()).index(y)]
+        + list(dic.keys())[list(dic.values()).index(x)]
+    )
+    dic1[newSquence] = index
+    list1 = [newSquence, auxiliaryList[y], auxiliaryList[x]]
+    list2 = [matrixMin / 2, treeMark[y], treeMark[x]]
+
+    del auxiliaryList[x]
+    del auxiliaryList[y]
+    del treeMark[x]
+    del treeMark[y]
+    auxiliaryList.append(list1)
+    treeMark.append(list2)
+    return createNdm(dic1, ndm, auxiliaryList, treeMark)
+
+
+def UPGMA(seqs, comparator):
+    """
+    :seqs: a list of sequences (aitd.Sequence)
+    """
+    n = len(seqs)
+    treeMark = []
+    auxiliaryList = []
+    dic = {}
+    for i in range(n):
+        dic[chr(65 + i)] = i
+        auxiliaryList.append([chr(65 + i)])
+        treeMark.append([chr(65 + i)])
+    sequenceList = []
+    for i in range(n):
+        sequenceList.append(seqs[i].sequence)
+    l = len(sequenceList)
+    odm = np.zeros((l - 1, l - 1))
+    for i in range(l - 1):
+        for j in range(i + 1, l):
+            odm[j - 1][i] = comparator(sequenceList[i], sequenceList[j])
+    getMatrixMin(odm)
+    createNdm(dic, odm, auxiliaryList, treeMark)
+    return auxiliaryList[0], treeMark[0]
+    # drawArrow(auxiliaryList[0], treeMark[0], n + 1, 0, 0, 0)
+    # plt.show()
+
+
+setattr(xerlist.TreePlanterList, "UPGMA", UPGMA)
+
+
+def drawArrow(auxiliaryList, treeMark, n, m=0, upperX=0, upperY=0,display=True):
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.set_title("Phylogenetic tree")
+    plt.ylabel("Distance")
+    ax.set_xticks([])
+    def _drawArrow(auxiliaryList, treeMark, n, m=0, upperX=0, upperY=0,display=True):
+        # fig = plt.figure()
+        # ax = fig.add_subplot(111)
+        # ax.set_title("Phylogenetic tree")
+        # plt.ylabel("Distance")
+        # ax.set_xticks([])
+        if isinstance(treeMark[0], float):
+            x = (m + n) / 2
+            if upperX != 0:
+                ax.plot((x, upperX), (treeMark[0], upperY), color="k")
+            else:
+                ax.set_xlim(0, n)
+                ax.set_ylim(0, treeMark[0] + 1)
+            ax.scatter(x, treeMark[0], c="k", marker="o")
+            ax.text(x + 0.05, treeMark[0] + 0.05, treeMark[0])
+            ax.scatter((x + n) / 2, treeMark[0], c="k", marker="o", alpha=0)
+            ax.scatter((x + m) / 2, treeMark[0], c="k", marker="o", alpha=0)
+            ax.plot(((x + n) / 2, x), (treeMark[0], treeMark[0]), color="k")
+            ax.plot(((x + m) / 2, x), (treeMark[0], treeMark[0]), color="k")
+            _drawArrow(auxiliaryList[2], treeMark[2], n, x, (x + n) / 2, treeMark[0])
+            _drawArrow(auxiliaryList[1], treeMark[1], x, m, (x + m) / 2, treeMark[0])
+        else:
+            x = (m + n) / 2
+            ax.plot((x, upperX), (0.05, upperY), color="k")
+            ax.scatter(x, 0.02, c="k")
+            ax.text(x + 0.05, 0.05, treeMark[0])
+    _drawArrow(auxiliaryList, treeMark, n, m, upperX, upperY,display)
+    if display:
+        plt.show()
+
+
+setattr(xerlist.DisplayList, "custom", drawArrow)
+
+# if __name__ == "__main__":
+#     from aitd import *
+
+#     seqs = [
+#         Sequence("DNA", "Seq1", "GATTACA"),
+#         Sequence("DNA", "Seq2", "GCATGCU"),
+#         Sequence("DNA", "Seq3", "GACTACG"),
+#         Sequence("DNA", "Seq4", "CTGAGCT"),
+#     ]
+#     tree = getattr(xerlist.TreePlanterList, "UPGMA")(
+#         seqs, getattr(xerlist.ProcessorList, "needleman-wunsch")
+#     )
+
+#     # print(tree[0],tree[1])
+
+#     getattr(xerlist.DisplayList, "custom")(tree[0],tree[1],4+1)
 
 if __name__ == "__main__":
     pass
