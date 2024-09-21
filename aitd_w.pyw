@@ -14,6 +14,11 @@ from PIL import Image, ImageTk
 import yaml
 import aitd
 import shutil
+import pyglet
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.pylab import mpl
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
 root = Tk(className="AITD_System")
 root.title("AITD System")
@@ -25,6 +30,11 @@ root.minsize(int(scx / 2), int(scy / 1.6))
 # root.maxsize(int(scx / 2), int(scy / 1.8))
 
 programdict = os.path.dirname(os.path.abspath(__file__))
+
+pyglet.font.add_file(
+    os.path.join(programdict, "data", "fonts", "SourceHanSansSC-Normal.otf")
+)
+# pyglet.font.add_file(os.path.join(programdict,"data","fonts","OPPOSans-Regular.ttf"))
 
 projectpath = ""
 nowopen = False
@@ -223,7 +233,141 @@ def displaysktch(data, opened):
 def displayali(data, opened):
     global ismainfat
     global projectpath
+    global alit
+    global isdisplayseqcolored
+    isdisplayseqcolored = True
     ismainfat = True
+    with open(os.path.join(projectpath, data["file"]), "r") as f:
+        alit = f.readlines()
+    alit[0] = alit[0].replace("\n", "")
+
+    topmainf = Frame(mainf, bg="white")
+
+    seqfr = Frame(topmainf)
+    seqtext = Text(
+        seqfr, wrap=NONE, selectbackground="black", height=3
+    )  # , font=("OPPO Sans",10))  #, yscrollincrement=20)
+    seqtext.bind("<Return>", lambda *args: "break")
+    seqtext.tag_config("tag_A", foreground="chocolate")
+    seqtext.tag_config("tag_T", foreground="blueviolet")
+    seqtext.tag_config("tag_C", foreground="darkgreen")
+    seqtext.tag_config("tag_G", foreground="dodgerblue")
+    seqtext.tag_config("tag_NONE", foreground="aqua")
+    seqtext.tag_config("tag_GOT", foreground="green")
+    seqtext.tag_config("tag_UNGOT", foreground="yellow")
+    seqtext.tag_config("tag_STOPAT", foreground="red")
+
+    seqtextvbtf = ttk.Scrollbar(seqfr, orient=HORIZONTAL, command=seqtext.xview)
+    seqtext.configure(xscrollcommand=seqtextvbtf.set)
+    seqtextvbtf.pack(side=BOTTOM, fill=X)
+    seqtext.pack(fill=BOTH, expand=1)
+
+    def showseq(seq, seqtext, color=True):
+        global isdisplayseqcolored
+        if color:
+            for i in range(len(seq)):
+                try:
+                    if seq[i] == "-":
+                        seqtext.insert(END, seq[i], "tag_NONE")
+                    else:
+                        try:
+                            seqtext.insert(END, seq[i], "tag_%s" % seq[i])
+                        except Exception:
+                            seqtext.insert(END, seq[i])
+                    if i % 200 == 0:
+                        root.update()
+                except Exception:
+                    return
+        else:
+            for i in range(len(seq)):
+                try:
+                    seqtext.insert(END, seq[i])
+                    if i % 200 == 0:
+                        root.update()
+                except Exception:
+                    return
+        isdisplayseqcolored = color
+        # seqtext.config(state=DISABLED)
+
+    seqtext.config(state=NORMAL)
+    showseq(alit[0], seqtext, isdisplayseqcolored)
+    seqtext.insert(END, "\n")
+    # print(alit)
+    for i in range(len(alit[0])):
+        if alit[0][i] == "-" or alit[1][i] == "-":
+            seqtext.insert(END, ":", "tag_STOPAT")
+        elif alit[0][i] != alit[1][i]:
+            seqtext.insert(END, "|", "tag_UNGOT")
+        else:
+            seqtext.insert(END, "|", "tag_GOT")
+        if i % 200 == 0:
+            root.update()
+    seqtext.insert(END, "\n")
+    print(alit)
+    showseq(alit[1], seqtext, isdisplayseqcolored)
+    seqtext.config(state=DISABLED)
+
+    seqfr.place(relwidth=1, relx=0, rely=0)
+
+    topmainf.place(relheight=0.2, relwidth=1, relx=0, rely=0)
+
+    scoredistance = Frame(mainf, bg="white")
+
+    with open(os.path.join(projectpath, data["data"]), "r") as f:
+        datadata = f.readlines()
+        Label(
+            topmainf,
+            text=getlang("score") + ": %d" % (int(datadata[0].replace("\n", ""))),
+            bg="white",
+        ).place(relx=0, rely=0.7)
+        Label(
+            topmainf,
+            text=getlang("distance") + ": %d" % (int(datadata[1].replace("\n", ""))),
+            bg="white",
+        ).place(relx=0.5, rely=0.7)
+
+    eadd, edefect, ereplace = 0, 0, 0
+
+    for i in range(len(alit[0])):
+        if alit[0][i] == "-" and alit[1][i] != "-":
+            eadd += 1
+        elif alit[0][i] != "-" and alit[1][i] == "-":
+            edefect += 1
+        else:
+            ereplace += 1
+    y = np.array([eadd, edefect, ereplace])
+
+    figure = plt.figure(num=2, figsize=(7, 4), dpi=80, frameon=True)
+
+    plt.clf()
+
+    plt.pie(
+        y,
+        labels=[getlang("add"), getlang("defect"), getlang("replace")],
+        colors=["#d5695d", "#5d8ca8", "#65a479"],
+        autopct='%.2f%%',
+    )
+    # plt.title("RUNOOB Pie Test")
+    drawpic_canvas = FigureCanvasTkAgg(figure, master=scoredistance)
+    drawpic_canvas.draw()
+    drawpic_canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
+
+    scoredistance.place(relheight=0.6, relwidth=1, relx=0, rely=0.2)
+
+    secuffr = Frame(mainf, bg="white")
+    lbee1 = Text(secuffr)
+    lbee1.pack(fill=BOTH, expand=1)
+    lbee1.insert(END, "CODE: %s ; OPPOSING: " % opened)
+    for i in data["opposing"]:
+        lbee1.insert(END, i + ", ")
+    lbee1.insert(
+        END,
+        "; ALGORITHM: %s" % (data["algorithm"]),
+    )
+    lbee1.config(state=DISABLED)
+    secuffr.place(relheight=0.08, relwidth=1, relx=0, rely=0.9)
+
+    root.update()
 
 
 def displayseq(data, opened):
@@ -249,30 +393,25 @@ def displayseq(data, opened):
     for i in mainf.winfo_children():
         i.destroy()
     seqfr = Frame(mainf)
-    seqtext = Text(seqfr, wrap=WORD, selectbackground="cyan")
+    seqtext = Text(seqfr, wrap=WORD, selectbackground="cyan")  # , yscrollincrement=20)
     seqtext.bind("<Return>", lambda *args: "break")
     seqtext.tag_config("tag_A", foreground="chocolate")
-    seqtext.tag_config("tag_T", foreground="red")
+    seqtext.tag_config("tag_T", foreground="blueviolet")
     seqtext.tag_config("tag_C", foreground="darkgreen")
-    seqtext.tag_config("tag_G", foreground="blue")
+    seqtext.tag_config("tag_G", foreground="dodgerblue")
 
     def showseq(seq, seqtext, color=True):
         global isdisplayseqcolored
+        seqtext.config(state=NORMAL)
         seqtext.delete(0.0, END)
         if color:
             for i in range(len(seq)):
                 try:
-                    if seq[i] == "A":
-                        seqtext.insert(END, seq[i], "tag_A")
-                    elif seq[i] == "C":
-                        seqtext.insert(END, seq[i], "tag_C")
-                    elif seq[i] == "G":
-                        seqtext.insert(END, seq[i], "tag_G")
-                    elif seq[i] == "T":
-                        seqtext.insert(END, seq[i], "tag_T")
-                    else:
+                    try:
+                        seqtext.insert(END, seq[i], "tag_%s" % seq[i])
+                    except Exception:
                         seqtext.insert(END, seq[i])
-                    if i % 100 == 0:
+                    if i % 200 == 0:
                         root.update()
                 except Exception:
                     return
@@ -280,11 +419,12 @@ def displayseq(data, opened):
             for i in range(len(seq)):
                 try:
                     seqtext.insert(END, seq[i])
-                    if i % 100 == 0:
+                    if i % 200 == 0:
                         root.update()
                 except Exception:
                     return
         isdisplayseqcolored = color
+        seqtext.config(state=DISABLED)
 
     seqtextvbtf = ttk.Scrollbar(seqfr, orient=VERTICAL, command=seqtext.yview)
     seqtext.configure(yscrollcommand=seqtextvbtf.set)
@@ -326,7 +466,7 @@ def displayseq(data, opened):
         with open(os.path.join(projectpath, data["file"]), "w") as f:
             f.write(seqt)
         showseq(seqt, seqtext, isdisplayseqcolored)
-        seqtext.config(state=DISABLED)
+        # seqtext.config(state=DISABLED)
         editmode = False
 
     def delleq(*args):
