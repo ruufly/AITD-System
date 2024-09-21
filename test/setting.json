@@ -1,1 +1,98 @@
-{}
+{
+    "name": "test",
+    "sequence_list": {
+        "seq::EcoliK12": {
+            "file": "data\\sequence\\EcoliK12.seq",
+            "name": "E. Coli K12",
+            "metadata": "data\\sequence\\EcoliK12.metadata",
+            "type": "genome",
+            "description": "Escherichia coli str. K-12 substr. MG1655",
+            "from": "NCBI"
+        },
+        "seq::EcoliO157H7": {
+            "file": "data\\sequence\\EcoliO157H7.seq",
+            "name": "E Coli O157:H7",
+            "metadata": "data\\sequence\\EcoliO157H7.metadata",
+            "type": "genome",
+            "description": "Escherichia coli O157:H7 str. Sakai",
+            "from": "NCBI"
+        },
+        "seq::EcoliccmC": {
+            "file": "data\\sequence\\EcoliccmC.seq",
+            "name": "E. Coli cytochrome c C",
+            "metadata": "data\\sequence\\EcoliccmC.metadata",
+            "type": "gene",
+            "description": "ccmC [ Escherichia coli str. K-12 substr. MG1655 ]",
+            "from": "NCBI"
+        },
+        "seq::EcoliccmE": {
+            "file": "data\\sequence\\EcoliccmE.seq",
+            "name": "E. Coli cytochrome c E",
+            "metadata": "data\\sequence\\EcoliccmE.metadata",
+            "type": "gene",
+            "description": "ccmE cytochrome c-type biogenesis protein CcmE [ Escherichia coli O157:H7 str. Sakai ]",
+            "from": "NCBI"
+        },
+        "seq::HsapiensSCO2": {
+            "file": "data\\sequence\\HsapiensSCO2.seq",
+            "name": "H. sapiens cytochrome c oxidase 2",
+            "metadata": "data\\sequence\\HsapiensSCO2.metadata",
+            "type": "gene",
+            "description": "SCO2 synthesis of cytochrome C oxidase 2 [ Homo sapiens (human) ]",
+            "from": "NCBI"
+        }
+    },
+    "alignment_list": {
+        "ali::EcoliccmC-EcoliccmE-00": {
+            "file": "data\\alignment\\EcoliccmC.EcoliccmE.ali",
+            "opposing": [
+                "seq::EcoliccmC",
+                "seq::EcoliccmE"
+            ],
+            "data": "data\\alignment\\EcoliccmC.EcoliccmE.ali.dat",
+            "algorithm": "ComparatorList::needleman-wunsch"
+        },
+        "ali::EcoliccmC-HsapiensSCO2-00": {
+            "file": "data\\alignment\\EcoliccmC.HsapiensSCO2.ali",
+            "opposing": [
+                "seq::EcoliccmC",
+                "seq::HsapiensSCO2"
+            ],
+            "data": "data\\alignment\\EcoliccmC.HsapiensSCO2.ali.dat",
+            "algorithm": "ComparatorList::needleman-wunsch"
+        },
+        "ali::EcoliccmE-HsapiensSCO2-00": {
+            "file": "data\\alignment\\EcoliccmE.HsapiensSCO2.ali",
+            "opposing": [
+                "seq::EcoliccmE",
+                "seq::HsapiensSCO2"
+            ],
+            "data": "data\\alignment\\EcoliccmE.HsapiensSCO2.ali.dat",
+            "algorithm": "ComparatorList::needleman-wunsch"
+        }
+    },
+    "tree_list": {
+        "tree::EcoliccmC-EcoliccmE-HsapiensSCO2-00": {
+            "file": "data\\tree\\EcoliccmC.EcoliccmE.HsapiensSCO2.tree",
+            "opposing": [
+                "seq::EcoliccmC",
+                "seq::EcoliccmE",
+                "seq::HsapiensSCO2"
+            ],
+            "algorithm": "TreePlanterList::UPGMA",
+            "processor": "ProcessorList::needleman-wunsch"
+        }
+    },
+    "sketch_list": {
+        "sktch::20240917164001": {
+            "file": "cache\\sketch\\20240917164001.png",
+            "composition": [
+                "seq::EcoliccmE",
+                "seq::HsapiensSCO2",
+                "seq::EcoliccmC"
+            ],
+            "from": "tree::EcoliccmC-EcoliccmE-HsapiensSCO2-00",
+            "renderer": "DisplayList::custom"
+        }
+    }
+}

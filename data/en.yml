@@ -22,3 +22,57 @@ notsetting: No such setting item.
 wpj: This is not a recognizable project.
 
 exit: You have exited this system successfully.
+
+
+
+
+################################################################
+
+newpj: New project
+openpj: Open project
+copypj: Copy the project
+help: Help
+file: File
+openseq: Open sequence file
+opencom: Open compare file
+setting: Settings
+rcpj: Recently opened projects
+norcpj: Clear the list
+about_about: About
+helpdoc: Helping document
+
+hasopened: You have already opened a project. Do you want to close it?
+notfoundpj: Project directory not found!
+
+pjsetting: Setting file
+vscsetting: Basic settings
+impseq: Imported sequence
+impty: (Empty)
+smpty: (Empty)
+pmpty: (Empty)
+treeske: Construction sketch
+treestree: Completed tree
+aicr: AI calculation results
+osjr: Optimal sequence judgment
+artd: Average tree drawing
+esep: Estimation of species evolution path
+pict: Plug-ins
+comprr: Alignment
+
+reallyopen: Do you really want to open it? If the existing ones are not saved, you are likely to lose data.
+seqtoolong: The sequence is too long, opening it may cause serious program lag. Do you really want to open this sequence?
+
+editseq: Edit Sequence
+occlr: Open / Close the Color
+deldeq: Delete Sequence
+realdelseq: Do you really want to delete the sequence file? It will never be retrieved!
+dene: Done
+exportimg: Export
+errorsave: Error! Please try again.
+success: Success!
+
+score: Score
+distance: Distance
+add: Add
+defect: Defect
+replace: Replace

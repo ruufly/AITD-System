@@ -22,3 +22,57 @@ notsetting: 没有这样的设置项。
 wpj: 这不是一个可识别的项目。
 
 exit: 您已成功退出本软件。
+
+
+
+
+################################################################
+
+newpj: 新建项目
+openpj: 打开项目
+copypj: 复制项目
+help: 帮助
+file: 文件
+openseq: 打开序列文件
+opencom: 打开对比文件
+setting: 设置
+rcpj: 最近打开的项目
+norcpj: 清空列表
+about_about: 关于
+helpdoc: 帮助文档
+
+hasopened: 您已经打开了一个项目。您要关闭它吗？
+notfoundpj: 找不到项目文件夹！
+
+pjsetting: 项目设置文件
+vscsetting: 基础设置
+impseq: 已导入的序列
+impty: (空)
+smpty: (空)
+pmpty: (空)
+treeske: 建树草图
+treestree: 已建好的树
+aicr: AI计算结果
+osjr: 最优序列判断
+artd: 平均树绘制
+esep: 物种演化路径估计
+pict: 插件
+comprr: 序列比对
+
+reallyopen: 您真的要打开它吗？如果现有的没有保存，您很有可能丢失数据。
+seqtoolong: 该序列过长，打开它可能会造成严重的程序卡顿。您真的要打开该序列吗？
+
+editseq: 编辑该序列
+occlr: 打开/关闭颜色显示
+deldeq: 删除序列文件
+realdelseq: 您真的要删除序列文件吗？它将永远无法找回！
+dene: 完成
+exportimg: 导出
+errorsave: 发生错误！请重试。
+success: 导出成功！
+
+score: 分数
+distance: 距离
+add: 增添
+defect: 缺失
+replace: 替换

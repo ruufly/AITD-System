@@ -228,7 +228,7 @@ def UPGMA(seqs, comparator):
 setattr(xerlist.TreePlanterList, "UPGMA", UPGMA)
 
 
-def drawArrow(auxiliaryList, treeMark, n, m=0, upperX=0, upperY=0,display=True):
+def drawArrow(auxiliaryList, treeMark, n, m=0, upperX=0, upperY=0,display=True, issave=False, savepath=""):
     fig = plt.figure()
     ax = fig.add_subplot(111)
     ax.set_title("Phylogenetic tree")
@@ -263,6 +263,8 @@ def drawArrow(auxiliaryList, treeMark, n, m=0, upperX=0, upperY=0,display=True):
     _drawArrow(auxiliaryList, treeMark, n, m, upperX, upperY,display)
     if display:
         plt.show()
+    if issave:
+        plt.savefig(savepath)
 
 
 setattr(xerlist.DisplayList, "custom", drawArrow)
