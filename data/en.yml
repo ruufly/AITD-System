@@ -73,6 +73,11 @@ success: Success!
 
 score: Score
 distance: Distance
-add: Add
-defect: Defect
-replace: Replace
+match: Match
+insertion: Insertion
+deletion: Deletion
+point_mutation: Point Mutation
+transition: Transition
+transversion: Transversion
+inallofpm: In all of the point mutations
+msuccess: Match successful
