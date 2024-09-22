@@ -73,6 +73,11 @@ success: 导出成功！
 
 score: 分数
 distance: 距离
-add: 增添
-defect: 缺失
-replace: 替换
+match: 匹配结果
+insertion: 增添
+deletion: 缺失
+point_mutation: 点突变
+transition: 转换
+transversion: 颠换
+inallofpm: 在所有的点突变中
+msuccess: 匹配成功
