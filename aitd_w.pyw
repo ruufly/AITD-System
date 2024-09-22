@@ -19,6 +19,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.pylab import mpl
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+from matplotlib.patches import ConnectionPatch
 
 root = Tk(className="AITD_System")
 root.title("AITD System")
@@ -324,29 +325,77 @@ def displayali(data, opened):
             topmainf,
             text=getlang("distance") + ": %d" % (int(datadata[1].replace("\n", ""))),
             bg="white",
-        ).place(relx=0.5, rely=0.7)
+        ).place(relx=0.25, rely=0.7)
 
-    eadd, edefect, ereplace = 0, 0, 0
+    eadd, edefect, ereplace, etransition, etransversion, esuccess = 0, 0, 0, 0, 0, 0
+
+    datatype = namespaces[data["opposing"][0]]["type"]
 
     for i in range(len(alit[0])):
         if alit[0][i] == "-" and alit[1][i] != "-":
             eadd += 1
         elif alit[0][i] != "-" and alit[1][i] == "-":
             edefect += 1
-        else:
+            # print(f"edefect-{alit[0][i]}-{alit[1][i]}")
+        elif alit[0][i] != alit[1][i]:
             ereplace += 1
-    y = np.array([eadd, edefect, ereplace])
+            # print(f"ereplace-{alit[0][i]}-{alit[1][i]}")
+            if datatype == "gene" or datatype == "genome":
+                if (
+                    (alit[0][i] == "A" and alit[1][i] == "G")
+                    or (alit[0][i] == "G" and alit[1][i] == "A")
+                    or (alit[0][i] == "C" and alit[1][i] == "T")
+                    or (alit[0][i] == "T" and alit[1][i] == "C")
+                ):
+                    etransition += 1
+                if (
+                    (alit[0][i] == "A" and alit[1][i] == "C")
+                    or (alit[0][i] == "C" and alit[1][i] == "A")
+                    or (alit[0][i] == "G" and alit[1][i] == "T")
+                    or (alit[0][i] == "T" and alit[1][i] == "G")
+                ):
+                    etransversion += 1
+        else:
+            esuccess += 1
 
-    figure = plt.figure(num=2, figsize=(7, 4), dpi=80, frameon=True)
+    y = np.array([eadd, edefect, ereplace, esuccess])
+
+    if datatype == "gene" or datatype == "genome":
+        yn = np.array([etransition, etransversion])
 
     plt.clf()
 
-    plt.pie(
+    figure = plt.figure(num=2, figsize=(7, 4), dpi=80, frameon=True)
+
+    ax1 = figure.add_subplot(121)
+    ax1.set_title(getlang("match"))
+
+    ax1.pie(
         y,
-        labels=[getlang("add"), getlang("defect"), getlang("replace")],
-        colors=["#d5695d", "#5d8ca8", "#65a479"],
-        autopct='%.2f%%',
+        labels=[getlang("insertion"), getlang("deletion"), getlang("point_mutation"), getlang("msuccess")],
+        colors=["#d5695d", "#5d8ca8", "#65a479","#39c5bb"],
+        autopct="%.2f%%",
+        startangle=0,
+        radius=1.1,
+        pctdistance=0.6,
+        explode=(0, 0, 0,0.2),
+        shadow=True
     )
+
+    print(eadd,edefect,ereplace,etransition,etransversion)
+
+    if (datatype == "gene" or datatype == "genome") and (etransition != 0 or etransversion != 0):
+        ax2 = figure.add_subplot(122)
+        ax2.set_title(getlang("inallofpm"))
+        ax2.pie(
+            yn,
+            colors=['khaki', 'olive'],
+            autopct='%.2f%%',
+            labels=[getlang("transition"),getlang("transversion")],
+            radius=0.5,
+            shadow=True
+        )
+
     # plt.title("RUNOOB Pie Test")
     drawpic_canvas = FigureCanvasTkAgg(figure, master=scoredistance)
     drawpic_canvas.draw()
@@ -375,6 +424,7 @@ def displayseq(data, opened):
     global ismainfat
     global projectpath
     global isdisplayseqcolored
+    global pjset
     isdisplayseqcolored = True
     # if nowsthopen == opened:
     #     return
@@ -400,7 +450,7 @@ def displayseq(data, opened):
     seqtext.tag_config("tag_C", foreground="darkgreen")
     seqtext.tag_config("tag_G", foreground="dodgerblue")
 
-    def showseq(seq, seqtext, color=True):
+    def showseq(seq, seqtext, color=True, isupdate=False):
         global isdisplayseqcolored
         seqtext.config(state=NORMAL)
         seqtext.delete(0.0, END)
@@ -411,7 +461,7 @@ def displayseq(data, opened):
                         seqtext.insert(END, seq[i], "tag_%s" % seq[i])
                     except Exception:
                         seqtext.insert(END, seq[i])
-                    if i % 200 == 0:
+                    if i % 200 == 0 and isupdate:
                         root.update()
                 except Exception:
                     return
@@ -419,7 +469,7 @@ def displayseq(data, opened):
             for i in range(len(seq)):
                 try:
                     seqtext.insert(END, seq[i])
-                    if i % 200 == 0:
+                    if i % 200 == 0 and isupdate:
                         root.update()
                 except Exception:
                     return
@@ -435,9 +485,9 @@ def displayseq(data, opened):
     root.update()
 
     if len(seqt) <= 5000:
-        showseq(seqt, seqtext, True)
+        showseq(seqt, seqtext, True, True)
     else:
-        showseq(seqt, seqtext, False)
+        showseq(seqt, seqtext, False, True)
 
     seqtext.config(state=DISABLED)
 
@@ -471,6 +521,7 @@ def displayseq(data, opened):
 
     def delleq(*args):
         global editmode
+        global pjset
         if editmode:
             return
         if messagebox.askyesno("AITD System", getlang("realdelseq")):
@@ -480,6 +531,7 @@ def displayseq(data, opened):
                 os.remove(os.path.join(projectpath, data["metadata"]))
                 for i in mainf.winfo_children():
                     i.destroy()
+                del pjset["sequence_list"][opened]
 
     def cuc(*args):
         global isdisplayseqcolored
@@ -706,6 +758,6 @@ menu.add_cascade(label=getlang("help"), menu=helpsubmenu)
 
 root.config(menu=menu)
 
-openpj(pp="C:\\Users\\87023\\OneDrive\\科创大赛\\AITD System\\test")
+# openpj(pp="C:\\Users\\87023\\OneDrive\\科创大赛\\AITD System\\test")
 
 root.mainloop()
