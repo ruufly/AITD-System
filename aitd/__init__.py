@@ -288,3 +288,4 @@ setattr(xerlist.DisplayList, "custom", drawArrow)
 
 if __name__ == "__main__":
     pass
+
