@@ -17,7 +17,7 @@ def FASTA_parser(data):
     return returnData
 
 
-setattr(xerlist.ParserList, "aitd-fasta", FASTA_parser)
+setattr(xerlist.ParserList, "ParserList::aitd-fasta", FASTA_parser)
 
 
 def needleman_wunsch(seq1, seq2, match=5, mismatch=-4, gap=-2):
@@ -86,11 +86,11 @@ def needleman_wunsch(seq1, seq2, match=5, mismatch=-4, gap=-2):
     return score_matrix[-1][-1], alignment
 
 
-setattr(xerlist.ComparatorList, "needleman-wunsch", needleman_wunsch)
+setattr(xerlist.ComparatorList, "ComparatorList::needleman-wunsch", needleman_wunsch)
 
 
 def process_NW(seq1, seq2):
-    alignment = getattr(xerlist.ComparatorList, "needleman-wunsch")(seq1, seq2)[1]
+    alignment = getattr(xerlist.ComparatorList, "ComparatorList::needleman-wunsch")(seq1, seq2)[1]
     ans = len(alignment)
 
     for i in alignment:
@@ -99,7 +99,7 @@ def process_NW(seq1, seq2):
     return ans
 
 
-setattr(xerlist.ProcessorList, "needleman-wunsch", process_NW)
+setattr(xerlist.ProcessorList, "ProcessorList::needleman-wunsch", process_NW)
 
 if __name__ == "__main__":
     seq1 = "GATTACA"
@@ -138,6 +138,8 @@ class Sequence(object):
         self.name = name
         self.sequence = sequence
         self.metadata = None
+    def setmeta(self,metdata):
+        self.metadata = metdata
 
 
 def compare(a, b, comparator):
@@ -237,7 +239,7 @@ def UPGMA(seqs, comparator):
     # plt.show()
 
 
-setattr(xerlist.TreePlanterList, "UPGMA", UPGMA)
+setattr(xerlist.TreePlanterList, "TreePlanterList::UPGMA", UPGMA)
 
 
 def drawArrow(
@@ -291,7 +293,7 @@ def drawArrow(
         plt.savefig(savepath)
 
 
-setattr(xerlist.DisplayList, "custom", drawArrow)
+setattr(xerlist.DisplayList, "DisplayList::custom", drawArrow)
 
 # if __name__ == "__main__":
 #     from aitd import *
