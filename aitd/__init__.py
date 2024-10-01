@@ -23,12 +23,17 @@ setattr(xerlist.ParserList, "aitd-fasta", FASTA_parser)
 def needleman_wunsch(seq1, seq2, match=5, mismatch=-4, gap=-2):
     """
     Needleman-Wunsch 算法实现
-    :param seq1: 第一个序列
-    :param seq2: 第二个序列
-    :param match: 匹配的分数
-    :param mismatch: 不匹配的分数
-    :param gap: 插入或删除间隙的分数
-    :return: 对齐的分数和最佳对齐的矩阵
+
+    Args:
+        seq1 (str): 第一个序列
+        seq2 (str): 第一个序列
+        match (int): 匹配的分数
+        mismatch (int): 不匹配的分数
+        gap (int): 插入或删除间隙的分数
+
+    Returns:
+        score (int): 对齐的分数
+        alignment (list): 最佳对对齐的矩阵
     """
     rows = len(seq1) + 1
     cols = len(seq2) + 1
@@ -200,7 +205,14 @@ def createNdm(dic, odm, auxiliaryList, treeMark):
 
 def UPGMA(seqs, comparator):
     """
-    :seqs: a list of sequences (aitd.Sequence)
+    非加权组平均法算法实现
+
+    Args:
+        seqs (list): 所有序列的列表
+        comparator (function): 两序列的比较函数
+
+    Returns:
+        tree (dict): 构建出的树
     """
     n = len(seqs)
     treeMark = []
@@ -228,13 +240,24 @@ def UPGMA(seqs, comparator):
 setattr(xerlist.TreePlanterList, "UPGMA", UPGMA)
 
 
-def drawArrow(auxiliaryList, treeMark, n, m=0, upperX=0, upperY=0,display=True, issave=False, savepath=""):
+def drawArrow(
+    auxiliaryList,
+    treeMark,
+    n,
+    m=0,
+    upperX=0,
+    upperY=0,
+    display=True,
+    issave=False,
+    savepath="",
+):
     fig = plt.figure()
     ax = fig.add_subplot(111)
     ax.set_title("Phylogenetic tree")
     plt.ylabel("Distance")
     ax.set_xticks([])
-    def _drawArrow(auxiliaryList, treeMark, n, m=0, upperX=0, upperY=0,display=True):
+
+    def _drawArrow(auxiliaryList, treeMark, n, m=0, upperX=0, upperY=0, display=True):
         # fig = plt.figure()
         # ax = fig.add_subplot(111)
         # ax.set_title("Phylogenetic tree")
@@ -260,7 +283,8 @@ def drawArrow(auxiliaryList, treeMark, n, m=0, upperX=0, upperY=0,display=True, 
             ax.plot((x, upperX), (0.05, upperY), color="k")
             ax.scatter(x, 0.02, c="k")
             ax.text(x + 0.05, 0.05, treeMark[0])
-    _drawArrow(auxiliaryList, treeMark, n, m, upperX, upperY,display)
+
+    _drawArrow(auxiliaryList, treeMark, n, m, upperX, upperY, display)
     if display:
         plt.show()
     if issave:
@@ -288,4 +312,3 @@ setattr(xerlist.DisplayList, "custom", drawArrow)
 
 if __name__ == "__main__":
     pass
-
