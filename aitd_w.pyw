@@ -19,7 +19,8 @@ import numpy as np
 
 # from copy import deepcopy
 import matplotlib.pyplot as plt
-import matplotlib.font_manager
+
+# import matplotlib.font_manager
 from matplotlib.pylab import mpl
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.patches import ConnectionPatch
@@ -766,14 +767,14 @@ def importseq():
             )
             previewsetsetchol["values"] = ("gene", "genome", "protein", "transcript")
             previewsetsetchol.current(0)
-            previewsetsetchol.place(x=115, rely=0.76, relwidth=0.4)
+            previewsetsetchol.place(x=125, rely=0.76, relwidth=0.4)
             # crlet = Frame(previewframe, bg="white")
             previewsetsetlet = Label(
                 previewframe, text=getlang("previewsetsetlet"), bg="white"
             )
             previewsetsetlet.place(x=5, rely=0.86)
             previewsetsetletents.append(Entry(previewframe, bg="white"))
-            previewsetsetletents[i].place(x=115, rely=0.86, relwidth=0.4)
+            previewsetsetletents[i].place(x=125, rely=0.86, relwidth=0.4)
             previewsetsetletents[i].insert(END, "seq::")
             # crlet.place(relx=0.5,rely=0.76)
             previewnote.add(previewframe, text="Seq %d" % (i + 1))
@@ -821,6 +822,10 @@ def importseq():
     root.update()
 
 
+def makealign():
+    ...
+
+
 def selection(*args, item=False):
     global nowsthopen
     global ismainfat
@@ -832,21 +837,21 @@ def selection(*args, item=False):
             return
     # print(item)
     canseb = ["seq", "sktch", "ali", "tree"]
-    cansebb = ["rimpseq"]
+    cansebb = ["rimpseq", "rcomprr"]
     if item:
-        if len(item.split("::")) > 1:
-            nowtype = item.split("::")[0]
-            if nowtype in canseb:
-                if nowsthopen == item:
-                    return
-                nowsthopen = item
-                if ismainfat:
-                    if not messagebox.askyesno("AITD System", getlang("reallyopen")):
-                        return
-                for i in mainf.winfo_children():
-                    i.destroy()
-            else:
+        nowtype = item.split("::")[0]
+        if (nowtype in canseb) or (item in cansebb):
+            if nowsthopen == item:
                 return
+            nowsthopen = item
+            if ismainfat:
+                if not messagebox.askyesno("AITD System", getlang("reallyopen")):
+                    return
+            for i in mainf.winfo_children():
+                i.destroy()
+        else:
+            return
+        if len(item.split("::")) > 1:
             if nowtype == "seq":
                 displayseq(namespaces[item], item)
             elif nowtype == "sktch":
@@ -856,19 +861,10 @@ def selection(*args, item=False):
             elif nowtype == "tree":
                 displaytree(namespaces[item], item)
         else:
-            if item in cansebb:
-                if nowsthopen == item:
-                    return
-                nowsthopen = item
-                if ismainfat:
-                    if not messagebox.askyesno("AITD System", getlang("reallyopen")):
-                        return
-                for i in mainf.winfo_children():
-                    i.destroy()
-            else:
-                return
             if item == "rimpseq":
                 importseq()
+            elif item == "rcomprr":
+                makealign()
 
 
 openseqbut = ttk.Button(
@@ -876,11 +872,17 @@ openseqbut = ttk.Button(
     text=getlang("openseqbut"),
     command=lambda *args: selection(*args, item="rimpseq"),
 )
-openseqbut.place(rely=0.81, relx=0.1, relwidth=0.3)
+openseqbut.place(rely=0.81, relx=0.05, relwidth=0.4)
 plibut = ttk.Button(
     sidef, text=getlang("plibut"), command=lambda *args: selection(*args, item="pict")
 )
-plibut.place(rely=0.81, relx=0.6, relwidth=0.3)
+plibut.place(rely=0.81, relx=0.55, relwidth=0.4)
+makealib = ttk.Button(
+    sidef,
+    text=getlang("makealib"),
+    command=lambda *args: selection(*args, item="rcomprr"),
+)
+makealib.place(rely=0.86, relx=0.05, relwidth=0.4)
 
 treefile.bind("<ButtonRelease-1>", selection)
 
@@ -889,12 +891,24 @@ def openpj(*args, pp=""):
     global projectpath
     global nowopen
     global pjset
+    global root
     global namespaces
     if nowopen:
         if not messagebox.askyesno("AITD System", getlang("hasopened")):
             return
-    if not pp:
-        projectpath = filedialog.askdirectory(title=getlang("openpj"))
+    treefile.delete(*treefile.get_children())
+    if pp == "":
+        print(pp)
+        projectpath = os.path.abspath(
+            os.path.join(
+                filedialog.askopenfilename(
+                    title="AITD System",
+                    filetypes=(("Project Setting", "setting.json"),),
+                ),
+                os.pardir,
+            )
+        )
+        # projectpath = filedialog.askdirectory(title=getlang("openpj"),initialdir="C:\\")
         if not os.path.exists(projectpath):
             messagebox.showerror("AITD System", getlang("notfoundpj"))
             return
@@ -906,7 +920,6 @@ def openpj(*args, pp=""):
         return
     with open(os.path.join(projectpath, "setting.json"), "r") as f:
         pjset = json.load(f)
-    treefile.delete(*treefile.get_children())
     global pjsetting, vscsetting, impseq, impty, treeske, smpty, treestree, tmpty, aicr, osjr, artd, esep, pict, pmpty
     # symbolplugin
     pict = treefile.insert("", 0, "pict", text=getlang("pict"), image=symbolplugin)
