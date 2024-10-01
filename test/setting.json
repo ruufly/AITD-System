@@ -43,7 +43,7 @@
         }
     },
     "alignment_list": {
-        "ali::EcoliccmC-EcoliccmE-00": {
+        "ali::EcoliccmC-EcoliccmE": {
             "file": "data\\alignment\\EcoliccmC.EcoliccmE.ali",
             "opposing": [
                 "seq::EcoliccmC",
@@ -52,7 +52,7 @@
             "data": "data\\alignment\\EcoliccmC.EcoliccmE.ali.dat",
             "algorithm": "ComparatorList::needleman-wunsch"
         },
-        "ali::EcoliccmC-HsapiensSCO2-00": {
+        "ali::EcoliccmC-HsapiensSCO2": {
             "file": "data\\alignment\\EcoliccmC.HsapiensSCO2.ali",
             "opposing": [
                 "seq::EcoliccmC",
@@ -61,7 +61,7 @@
             "data": "data\\alignment\\EcoliccmC.HsapiensSCO2.ali.dat",
             "algorithm": "ComparatorList::needleman-wunsch"
         },
-        "ali::EcoliccmE-HsapiensSCO2-00": {
+        "ali::EcoliccmE-HsapiensSCO2": {
             "file": "data\\alignment\\EcoliccmE.HsapiensSCO2.ali",
             "opposing": [
                 "seq::EcoliccmE",
@@ -72,7 +72,7 @@
         }
     },
     "tree_list": {
-        "tree::EcoliccmC-EcoliccmE-HsapiensSCO2-00": {
+        "tree::EcoliccmC-EcoliccmE-HsapiensSCO2": {
             "file": "data\\tree\\EcoliccmC.EcoliccmE.HsapiensSCO2.tree",
             "opposing": [
                 "seq::EcoliccmC",
