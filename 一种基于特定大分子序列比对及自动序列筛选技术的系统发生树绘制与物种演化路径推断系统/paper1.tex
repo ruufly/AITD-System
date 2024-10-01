@@ -2,18 +2,16 @@
 
 \usepackage[UTF8]{ctex}
 \usepackage[a4paper, total={6.8in,9.2in}]{geometry}
-\usepackage{abstract}
-\usepackage{lmodern}
-\usepackage{cite}
-\usepackage{float}
-\usepackage{booktabs}
-\usepackage{tabularx}
-\usepackage{longtable}
 \usepackage{multicol}
-\usepackage{hyperref}
-\usepackage{amsmath}
-\usepackage{dirtree}
 \usepackage{authblk}
+\usepackage{hyperref}
+\usepackage{float}
+% \usepackage{forest}
+\usepackage{dirtree}
+\usepackage{listings}
+\usepackage{amsmath}
+\usepackage{cite}
+% \usepackage[cache=false]{minted}
 
 \hypersetup{hidelinks,
     colorlinks=true,
@@ -25,15 +23,47 @@
 \renewcommand*{\Authand}{, }
 \renewcommand*{\Authands}{, }
 
+% \lstset{
+%     basicstyle          =   \sffamily,
+%     keywordstyle        =   \bfseries,
+%     commentstyle        =   \rmfamily\itshape,
+%     stringstyle         =   \ttfamily,
+%     flexiblecolumns,
+%     numbers             =   left,
+%     showspaces          =   false,
+%     numberstyle         =   \zihao{-5}\ttfamily,
+%     showstringspaces    =   false,
+%     captionpos          =   t,
+%     frame               =   lrtb,
+% }
+
+% \lstdefinestyle{Python}{
+%     language        =   Python,
+%     basicstyle      =   \zihao{-5}\ttfamily,
+%     numberstyle     =   \zihao{-5}\ttfamily,
+%     keywordstyle    =   \color{blue},
+%     keywordstyle    =   [2] \color{teal},
+%     stringstyle     =   \color{magenta},
+%     commentstyle    =   \color{red}\ttfamily,
+%     breaklines      =   true,
+%     columns         =   fixed,
+%     basewidth       =   0.5em,
+% }
+
+
+% \bibliographystyle{plain}
+
+
 \begin{document}
 
 \title{一种基于特定大分子序列比对及自动序列筛选技术的系统发生树绘制与物种演化路径推断系统}
-\author[a]{朱璟瑞\thanks{通讯作者: 870239526@qq.com}}
-\author[a]{胡高远}
-\author[a]{邓钰潼}
-\author[a]{尹家宝}
-\affil[a]{河南科技大学附属高级中学(周山校区), 471031}
-\date{\today}
+\author[1,*]{朱璟瑞}
+\author[2]{胡高远}
+\author[3]{邓钰潼}
+% \author[4]{白致远}
+\affil[1,2,3,*]{河南科技大学附属高级中学(周山校区), 471031}
+% \affil[4]{洛阳外国语学校(杨湾校区), 471013}
+\date{}
 \maketitle
 
 \begin{abstract}
@@ -41,9 +71,8 @@
     近些年来，随着分子生物学的发展，基因序列与蛋白质序列越来越多地被作为绘制系统发生树的重要参考依据，从中诞生了很多相应的技术。
     但是，这些技术在实践过程中，仍存在着一些问题。比如参考序列选择比较困难等，这些都给绘制出的系统发生树的准确性与严谨性带来了一定的影响。
     在本文中，笔者搭建了一套用于绘制系统发生树的计算机应用软件，这套系统集成了多种常用的比对与建树算法，同时，该系统还综合了近十年的相关科研数据，
-    使用了人工智能(AI)技术以对建成的系统发生树进行综合分析，从而得出最优异的、最能代表真实物种演化路径的系统发生树，
+    使用了人工智能(AI)技术以自动选择合适的比对序列并对建成的系统发生树进行综合分析，从而得出最优异的、最能代表真实物种演化路径的系统发生树，
     这一突破，能够使得研究人员无需拘泥于参考序列的选择，可缩短科研周期，提升科研效率。
-    同时，本系统包括了插件系统，这使得用户可以自定义需要的序列比对与建树算法，可扩展性更强。
     该系统的综合能力显著优于目前市面上常用的几款解决方案，使物种演化路径的推断过程变得更加便利、准确，对相关的科研工作可能会起到巨大的推进作用。
     \par\textbf{关键词: } 分子生物学, 序列比对, 系统发生树, 计算机应用软件, 人工智能
 \end{abstract}
@@ -83,47 +112,18 @@ F(i,j) &= \max \left\{
 \end{aligned}
 \end{equation}
 
-\par
-在生物序列比对算法中，该算法拥有很多优良的特性，如准确度较高、适用于多种序列的比对等。故本项目使用的默认算法便是本算法。
 
 \subsection{系统发生树构建方法}
-\par
-常见的系统发生树构建方法有很多，比如最小进化法、最大似然法等等。受开发时间限制，本系统只自带了非加权组平均法与邻接法的建树算法。
-关于其他方法，用户可以通过本系统的插件系统自行添加。
+
+\subsubsection{最大似然法}
 
 \subsubsection{非加权组平均法}
-\par
-非加权组平均法（UPGMA，unweighted pair-group method with arithmetic means）是一种常用的聚类分析方法。
-其算法思想基于聚类分析，其核心在于通过计算不同对象之间的距离来确定它们之间的亲缘关系。
-其具体的算法流程分为以下三步：
-\par
-首先，需要计算所有对象（如物种、基因序列等）之间的距离。
-\par
-找出距离最小的两个对象（OTU，Operational Taxonomic Units，操作分类单元），将它们聚为一个新的OTU。
-新的OTU的分支点位于这两个OTU间距离的1/2处。计算新的OTU与其他OTU之间的平均距离。
-重复上述步骤，找出距离最小的两个OTU（可以是原始的OTU或之前聚类形成的新OTU）进行聚类。
-如此反复，直到所有的OTU都聚到一起，形成一个完整的系统发生树。
-\par
-通过上述聚类过程，最终可以得到一个表示物种间亲缘关系的系统发生树。
-在系统发生树中，每个节点代表一个OTU，节点之间的连线表示它们之间的亲缘关系，连线的长度则反映了它们之间的进化距离。
 
 \subsubsection{邻接法}
-\par
-邻接法（Neighbor-Joining，NJ）是由Naruya Saitou和Masatoshi Nei于1987年首次提出的一种用于构建系统发育树的聚类方法\cite{ref5}。
-邻接法的算法思想基于最小进化原理，即在整个进化过程中，树的分支长度之和达到最小。
-该算法从一个完全未解析的树开始，然后通过迭代过程逐步构建出完整的系统发育树。具体算法流程如下：
-\par
-初始化一个完全未解析的树，其拓扑结构对应于星形网络，所有分类单元都从一个中心节点出发。
-\par
-在每一步迭代中，基于当前的距离矩阵计算一个称为Q的矩阵。Q矩阵的元素Q(i,j)表示将分类单元i和j连接到一个新的中间节点时，树的分支长度之和的增加量。
-在Q矩阵中找到最小值Q(i,j)，将对应的分类单元i和j连接到一个新的中间节点u。计算每个分类单元到新节点u的距离，并更新距离矩阵。
-迭代上述过程，用新节点替换连接的邻居对，并使用前一步计算的距离更新距离矩阵。
-\par
-当所有分类单元都被合并到树中，且树的拓扑结构完全解析时，迭代过程终止。
+
+\subsubsection{最小进化法}
 
 \subsection{常见的解决方案及其弊端}
-\par
-系统发生树构建与物种演化路径推断，现如今市面上已经有了几种常见的解决方案，但它们都有各自的弊端。
 
 \section{本系统的基础架构}
 \par
@@ -257,30 +257,23 @@ Python语法和动态类型，以及解释型语言的本质，使它成为多�
 邓钰潼：主导了人工智能训练用数据的寻找，完成了控制台端的代码；
 \par
 尹家宝：参与了人工智能训练用数据的寻找；
+\par
+白致远：提供了训练人工智能所必需的算力资源。
 
 \subsection{致谢}
 \par
-感谢洛阳外国语学校（杨湾校区）的白致远，他提供了训练人工智能所必需的算力资源。
-\par
 感谢华东师范大学计算机科学与技术学院的赵静博士，她为本项目人工智能模型的构建提了很多建设性的意见；
 \par
-感谢马来西亚国立大学的刘东升，他帮助我们进行了提示文本与项目文档的英文翻译的审校工作；
+感谢马来西亚国立大学的刘东升博士与亚琛工业大学的程天乐，他们帮助我们进行了提示文本与项目文档的英文翻译的审校工作；
 \par
-感谢河南科技大学附属高级中学的常易凡老师、陈洪武老师、朱晓东老师，作为我们的指导老师，他们为本项目的构建提供了一些帮助；
+感谢河南科技大学附属高级中学（周山校区）的常易凡老师、陈洪武老师、朱晓东老师，作为我们的指导老师，他们为本项目的构建提供了一些帮助；
 \par
-感谢河南科技大学附属高级中学的张剑辉老师、罗会杰老师，他们带领笔者走进了生物学和信息技术的大门，本项目的构建亦有他们间接的帮助；
+感谢河南科技大学附属高级中学（周山校区）的张剑辉老师、罗会杰老师，他们带领笔者走进了生物学和信息技术的大门，本项目的构建亦有他们间接的帮助；
 \par
-谨以此项目献给河南科技大学附属高级中学的张丹丹老师，感谢您这两年对我们的谆谆教诲，祝愿您生下一个健康快乐的宝宝！
+谨以此项目献给河南科技大学附属高级中学（周山校区）的张丹丹老师，感谢您这两年对我们的谆谆教诲，祝愿您生下一个健康快乐的宝宝！
 
-% \bibliographystyle{IEEEtran}
-% \bibliography{IEEEexample}
-\begin{thebibliography}{100}
-    \bibitem{ref1} 彭焕文, 王伟. 基于分子数据的系统发生树构建[J]. 植物学报, 2023, 58(02): 261-273.
-    \bibitem{ref2} Needleman SB, Wunsch CD. A general method applicable to the search for similarities in the amino acid sequence of two proteins[J]. J Mol Biol, 1970 Mar, 48(3): 443-53.
-    \bibitem{ref3} mmqwqf. 基于python的非加权分组平均法构造简单系统发生树（DNA）[EB/OL]. (2020-10-12), https://blog.csdn.net/mmqwqf/article\newline/details/108988456..
-    \bibitem{ref4} Python Software Foundation. History and License[EB/OL]. (2024-09-21), https://docs.python.org/3/license.html.
-    \bibitem{ref5} Saitou N, Nei M. The neighbor-joining method: a new method for reconstructing phylogenetic trees[J]. Mol Biol Evol. 1987 Jul; 4(4):406-25.
-\end{thebibliography}
+
+% \bibliography{refs}
 
 \end{multicols}
 
