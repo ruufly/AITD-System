@@ -90,7 +90,9 @@ setattr(xerlist.ComparatorList, "ComparatorList::needleman-wunsch", needleman_wu
 
 
 def process_NW(seq1, seq2):
-    alignment = getattr(xerlist.ComparatorList, "ComparatorList::needleman-wunsch")(seq1, seq2)[1]
+    alignment = getattr(xerlist.ComparatorList, "ComparatorList::needleman-wunsch")(
+        seq1, seq2
+    )[1]
     ans = len(alignment)
 
     for i in alignment:
@@ -115,17 +117,26 @@ if __name__ == "__main__":
 
 
 def readFile(filename, parser, sequenceList):
+    # sequenceList = []
     try:
         with open(filename, "r") as file:
             data = parser(file.read())
             for i in range(len(data)):
+                # sequenceList.append(Sequence())
                 try:
+                    # statistics = {}
+                    # for i in data[i]["sequence"]:
+                    #     if i in statistics:
+                    #         statistics[i] += 1
+                    #     else:
+                    #         statistics[i] = 1
                     sequenceList[i].sequence = data[i]["sequence"]
                     sequenceList[i].metadata = data[i]["metadata"]
                 except IndexError:
-                    raise error.DataMismatchError(
-                        f"Too much data in the file '{filename}'."
-                    )
+                    pass
+                    # raise error.DataMismatchError(
+                    #     f"Too much data in the file '{filename}'."
+                    # )
     except FileNotFoundError:
         raise error.FileError(f"File '{filename}' not found.")
     except Exception as e:
@@ -133,13 +144,14 @@ def readFile(filename, parser, sequenceList):
 
 
 class Sequence(object):
-    def __init__(self, type, name, sequence=""):
+    def __init__(self, type="", name="", sequence=""):
         self.type = type
         self.name = name
         self.sequence = sequence
         self.metadata = None
-    def setmeta(self,metdata):
-        self.metadata = metdata
+
+    def setMeta(self, metadata):
+        self.metadata = metadata
 
 
 def compare(a, b, comparator):
@@ -188,12 +200,12 @@ def createNdm(dic, odm, auxiliaryList, treeMark):
             ndm[j - 1][i] = odm[
                 dic[list(dic1.keys())[list(dic1.values()).index(j)]] - 1
             ][dic[list(dic1.keys())[list(dic1.values()).index(i)]]]
-    newSquence = (
+    newSequence = (
         list(dic.keys())[list(dic.values()).index(y)]
         + list(dic.keys())[list(dic.values()).index(x)]
     )
-    dic1[newSquence] = index
-    list1 = [newSquence, auxiliaryList[y], auxiliaryList[x]]
+    dic1[newSequence] = index
+    list1 = [newSequence, auxiliaryList[y], auxiliaryList[x]]
     list2 = [matrixMin / 2, treeMark[y], treeMark[x]]
 
     del auxiliaryList[x]
@@ -250,8 +262,8 @@ def drawArrow(
     upperX=0,
     upperY=0,
     display=True,
-    issave=False,
-    savepath="",
+    isSave=False,
+    savePath="",
 ):
     fig = plt.figure()
     ax = fig.add_subplot(111)
@@ -260,11 +272,6 @@ def drawArrow(
     ax.set_xticks([])
 
     def _drawArrow(auxiliaryList, treeMark, n, m=0, upperX=0, upperY=0, display=True):
-        # fig = plt.figure()
-        # ax = fig.add_subplot(111)
-        # ax.set_title("Phylogenetic tree")
-        # plt.ylabel("Distance")
-        # ax.set_xticks([])
         if isinstance(treeMark[0], float):
             x = (m + n) / 2
             if upperX != 0:
@@ -289,8 +296,8 @@ def drawArrow(
     _drawArrow(auxiliaryList, treeMark, n, m, upperX, upperY, display)
     if display:
         plt.show()
-    if issave:
-        plt.savefig(savepath)
+    if isSave:
+        plt.savefig(savePath)
 
 
 setattr(xerlist.DisplayList, "DisplayList::custom", drawArrow)
