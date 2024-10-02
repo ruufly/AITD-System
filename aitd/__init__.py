@@ -253,13 +253,13 @@ def createNdm(dic, odm, auxiliaryList, treeMark):
     return createNdm(dic1, ndm, auxiliaryList, treeMark)
 
 
-def UPGMA(seqs, comparator):
+def UPGMA(seqs, distance):
     """
     非加权组平均法算法实现
 
     Args:
         seqs (list): 所有序列的列表
-        comparator (function): 两序列的比较函数
+        distance (list[][]): 序列之间两两的距离
 
     Returns:
         tree (dict): 构建出的树
@@ -279,7 +279,7 @@ def UPGMA(seqs, comparator):
     odm = np.zeros((l - 1, l - 1))
     for i in range(l - 1):
         for j in range(i + 1, l):
-            odm[j - 1][i] = comparator(sequenceList[i], sequenceList[j])
+            odm[j - 1][i] = distance[i][j]
     getMatrixMin(odm)
     createNdm(dic, odm, auxiliaryList, treeMark)
     return auxiliaryList[0], treeMark[0]
