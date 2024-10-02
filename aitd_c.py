@@ -431,7 +431,8 @@ while True:
                     
                     
                 elif command[1] == "species":
-                    print("To be continued...")
+                    a=a
+                    # To be continued...
 
             ################################################################
             # HERE!!!!!!!!                                                 #
