@@ -114,7 +114,7 @@ def Note(message):
     print(Fore.CYAN + "[Note] %s" % message + Style.RESET_ALL)
 
 
-def Renote(message, end):
+def reNote(message, end):
     print("       %s" % message, end=end)
 
 
@@ -127,33 +127,33 @@ with open(os.path.join(programdict, "data", "setting.dat"), "rb") as f:
             pickle.dump(config, f)
 
 with open(os.path.join(programdict, "data", "en.yml"), "r", encoding="utf-8") as f:
-    endata = yaml.safe_load(f.read())
+    EnData = yaml.safe_load(f.read())
 
-langdata = endata
+langData = EnData
 
 
-def getword(word):
-    if word in langdata:
-        return langdata[word]
-    elif word in endata:
-        return endata[word]
+def getWord(word):
+    if word in langData:
+        return langData[word]
+    elif word in EnData:
+        return EnData[word]
     else:
         Fatal("Unable to find corresponding language information: %s" % word)
         exit(-1)
 
 
 def refresh_setting():
-    global langdata
+    global langData
     try:
         with open(
             os.path.join(programdict, "data", "%s.yml" % config["language"]),
             "r",
             encoding="utf-8",
         ) as f:
-            langdata = yaml.safe_load(f.read())
+            langData = yaml.safe_load(f.read())
     except Exception as e:
         Fatal("Unable to load language file: %s.yml" % (config["language"]))
-        langdata = endata
+        langData = EnData
         return False
     return True
 
@@ -162,26 +162,26 @@ refresh_setting()
 
 
 def mkdir(path):
-    Renote("%s %s..." % (getword("createdict"), path), end=" ")
+    reNote("%s %s..." % (getWord("createdict"), path), end=" ")
     try:
         os.makedirs(path)
         print("done.")
         return True
     except Exception:
         print()
-        Error("%s : %s" % (getword("dictnotcreate"), path))
+        Error("%s : %s" % (getWord("dictnotcreate"), path))
         return False
 
 
 def mkfile(filename, mode="w"):
-    Renote("%s %s..." % (getword("createfile"), filename), end=" ")
+    reNote("%s %s..." % (getWord("createfile"), filename), end=" ")
     try:
         open(filename, "w").close()
-        print(getword("done"))
+        print(getWord("done"))
         return True
     except Exception:
         print()
-        Error("%s : %s" % (getword("filenotcreate"), filename))
+        Error("%s : %s" % (getWord("filenotcreate"), filename))
         return False
 
 
@@ -211,24 +211,24 @@ while True:
         os.system("cls")
     elif command[0] == "setting":
         if len(command) < 3:
-            Error(getword("synerr"))
-            Note("%s : setting <option> <value>" % getword("usage"))
+            Error(getWord("synerr"))
+            Note("%s : setting <option> <value>" % getWord("usage"))
             continue
         if command[1] == "language":
             config["language"] = command[2]
             with open("data/setting.dat", "wb") as f:
                 pickle.dump(config, f)
             if refresh_setting():
-                Note("%s %s" % (getword("langset"), config["language"]))
+                Note("%s %s" % (getWord("langset"), config["language"]))
         else:
-            Error(getword("notsetting"))
+            Error(getWord("notsetting"))
     elif command[0] == "new":
         if len(command) < 3:
-            Error(getword("synerr"))
-            Note("%s : new <type> <name> [<parameter>]" % getword("usage"))
+            Error(getWord("synerr"))
+            Note("%s : new <type> <name> [<parameter>]" % getWord("usage"))
             continue
         if command[1] == "project":
-            Note(getword("mkpj"))
+            Note(getWord("mkpj"))
             mkdir(command[2])
             mkdir(os.path.join(command[2], "input"))
             mkdir(os.path.join(command[2], "plugins"))
@@ -247,10 +247,10 @@ while True:
             with open(os.path.join(command[2], "setting.json"), "w") as f:
                 json.dump({}, f)
             mkfile(os.path.join(command[2], "setting.dat"))
-            Note(getword("pjcreated"))
+            Note(getWord("pjcreated"))
         else:
-            Error(getword("synerr"))
-            Note("%s : new <type> <name> [<parameter>]" % getword("usage"))
+            Error(getWord("synerr"))
+            Note("%s : new <type> <name> [<parameter>]" % getWord("usage"))
             continue
     elif command[0] == "open":
         if len(command) == 2:
@@ -258,7 +258,7 @@ while True:
                 os.chdir(os.path.join(os.getcwd(), command[1]))
                 nowProject = command[1]
             except FileNotFoundError:
-                Error(getword("notpjdict"))
+                Error(getWord("notpjdict"))
                 nowProject = ""
                 continue
         else:
@@ -266,15 +266,15 @@ while True:
         # try:
         #     nowProject = command[1]
         # except IndexError:
-        #     Error(getword("synerr"))
-        #     Note("%s : open <name>" % getword("usage"))
+        #     Error(getWord("synerr"))
+        #     Note("%s : open <name>" % getWord("usage"))
         #     continue
         try:
             with open(os.path.join("setting.json"), "r") as f:
                 if json.load(f) == {}:
-                    Warning(getword("warnbasic"))
+                    Warning(getWord("warnbasic"))
         except Exception:
-            Error(getword("wpj"))
+            Error(getWord("wpj"))
             nowProject = ""
             continue
     elif command[0] == "debug":
@@ -283,16 +283,16 @@ while True:
         elif command[1] == "off":
             debug = False
         else:
-            Error(getword("synerr"))
-            Note("%s : debug [on|off]" % getword("usage"))
+            Error(getWord("synerr"))
+            Note("%s : debug [on|off]" % getWord("usage"))
             continue
     elif command[0] == "exit":
         if nowProject != "":
-            Note(getword("exitpj"))
+            Note(getWord("exitpj"))
             os.chdir(os.path.join(os.getcwd(), ".."))
             nowProject = ""
         else:
-            Note(getword("exit"))
+            Note(getWord("exit"))
             print(
             """
 +-----------------------------------------------------------------+
@@ -374,16 +374,16 @@ while True:
                             with open(programdict + name + ".seq", 'x') as f:
                                 f.write(seq.sequence)
                 else:
-                    Error(getword("synerr"))
-                    Note("%s : import <name> <file> [<parser>]" % getword("usage"))
+                    Error(getWord("synerr"))
+                    Note("%s : import <name> <file> [<parser>]" % getWord("usage"))
             elif command[0] == "species":
                 fullCommand = oriInput.split("\"")
                 if len(fullCommand) == 2:
                     speciesName = getName(fullCommand[1])
                     SpeciesList.extend(speciesName)
                 else:
-                    Error(getword("synerr"))
-                    Note("%s : species <name>" % getword("usage"))
+                    Error(getWord("synerr"))
+                    Note("%s : species <name>" % getWord("usage"))
             elif command[0] == "add":
                 if len(command) == 3:
                     if command[1] in SeqMap.keys():
@@ -392,12 +392,12 @@ while True:
                         SeqMap[command[1]] = [...]
                         SeqMap[command[1]].extend(command[2])
                 else:
-                    Error(getword("synerr"))
-                    Note("%s : add <species> <name>" % getword("usage"))
+                    Error(getWord("synerr"))
+                    Note("%s : add <species> <name>" % getWord("usage"))
             elif command[0] == "del":
                 if len(command) == 2:
                     while True:
-                        c = input(getword("confirmSpeciesDel"))
+                        c = input(getWord("confirmSpeciesDel"))
                         if c == 'y':
                             del SeqMap[command[1]]
                             break
@@ -405,7 +405,7 @@ while True:
                             break
                 if len(command) == 3:
                     while True:
-                        c = input(getword("confirmSeqDel"))
+                        c = input(getWord("confirmSeqDel"))
                         if c == 'y':
                             del SeqMap[command[1]][c]
                             break
@@ -439,9 +439,9 @@ while True:
                             
                         json.dump(dicts, js)
                 else:
-                    Error(getword("synerr"))
-                    Note("%s : parameter set <object> <key> <value>" % getword("usage"))
-                    Note("%s : parameter get <object> <key>" % getword("usage"))
+                    Error(getWord("synerr"))
+                    Note("%s : parameter set <object> <key> <value>" % getWord("usage"))
+                    Note("%s : parameter get <object> <key>" % getWord("usage"))
             elif command[0] == "align":
                 if command[1] == "seq":
                     defaultComparator = getattr(aitd.xerlist.ComparatorList, "ComparatorList::needleman-wunsch")
@@ -499,8 +499,8 @@ while True:
                                 for j in range(i, n + 2):
                                     pass # To be continued...
                 except:
-                    Error(getword("synerr"))
-                    Note("%s : tree <seqNum> <seq1> <seq2> <seq3>... [<parameter>]" % getword("usage"))
+                    Error(getWord("synerr"))
+                    Note("%s : tree <seqNum> <seq1> <seq2> <seq3>... [<parameter>]" % getWord("usage"))
                 
                     
 
@@ -508,6 +508,6 @@ while True:
             # HERE!!!!!!!!                                                 #
             ################################################################
             continue
-        Error(getword("invcmd"))
+        Error(getWord("invcmd"))
         continue
 
