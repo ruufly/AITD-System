@@ -32,6 +32,9 @@ def saveSetting(projectDict):
 def getNamespace(namespace):
     return
 
+def getObject(str):
+    with open(programdict + "setting.json") as js:
+        contents = json.read(js)
 
 #endif  // 乱入
 
@@ -425,6 +428,7 @@ while True:
                             defaultComparator = getattr(namespace, fun)
                             
                     print("align seq1 and seq2 with cmp and mat")
+                    
                     
                 elif command[1] == "species":
                     print("To be continued...")
