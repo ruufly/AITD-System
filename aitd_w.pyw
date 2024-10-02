@@ -1,3 +1,17 @@
+# Copyright 2024 Zhu jingrui, Hu Gaoyuan, Deng Yutong, et al
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+
+# http://www.apache.org/licenses/LICENSE-2.0
+
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import os
 
 try:
@@ -111,6 +125,20 @@ symbolplugin = ImageTk.PhotoImage(
             "data",
             "icons",
             "MaterialSymbolsLightReceiptLongOutlineRounded.png",
+        )
+    ).resize((20, 20))
+)
+symbolunchecked = ImageTk.PhotoImage(
+    Image.open(
+        os.path.join(
+            programdict, "data", "icons", "MaterialSymbolsLightCheckBoxOutlineBlank.png"
+        )
+    ).resize((20, 20))
+)
+symbolchecked = ImageTk.PhotoImage(
+    Image.open(
+        os.path.join(
+            programdict, "data", "icons", "MaterialSymbolsLightCheckBoxOutlineRounded.png"
         )
     ).resize((20, 20))
 )
@@ -448,7 +476,7 @@ def displayali(data, opened):
         lbee1.insert(END, i + ", ")
     lbee1.insert(
         END,
-        "; ALGORITHM: %s" % (data["algorithm"]),
+        "; ALGORITHM: %s ; MATRIX: %s ." % (data["algorithm"], data["matrix"]),
     )
     lbee1.config(state=DISABLED)
     secuffr.place(relheight=0.08, relwidth=1, relx=0, rely=0.9)
@@ -823,13 +851,213 @@ def importseq():
 
 
 def makealign():
-    ...
+    global pjset
+    global mainf
+    global projectpath
+    global comprr
+    global namespaces
+    openframe = Frame(mainf, bg="white")
+    openframe.place(relheight=0.5, relwidth=1, relx=0, rely=0)
+
+    seqs = []
+    for i in pjset["sequence_list"]:
+        seqs.append(i)
+
+    aligncholl = []
+    for i in aitd.xerlist.ComparatorList.__dict__:
+        if len(i.split("::")) > 1:
+            aligncholl.append(i)
+
+    maxrncholl = []
+    for i in aitd.xerlist.MatrixList.__dict__:
+        if len(i.split("::")) > 1:
+            maxrncholl.append(i)
+
+    def startdo(*args):
+        global seq1sv
+        global seq2sv
+        global cersv
+        global pjset
+        global mainf
+        global maxsv
+        global namespaces
+        global comprr
+        global projectpath
+        global gapcb
+        if seq1sv.get() == seq2sv.get():
+            messagebox.showerror("AITD System", getlang("sameseq"))
+            return
+        with open(
+            os.path.join(projectpath, namespaces[seq1sv.get()]["file"]), "r"
+        ) as f:
+            seq1 = f.read()
+        with open(
+            os.path.join(projectpath, namespaces[seq2sv.get()]["file"]), "r"
+        ) as f:
+            seq2 = f.read()
+        aliname = "ali::%s-%s" % (
+            seq1sv.get().split("::")[-1],
+            seq2sv.get().split("::")[-1],
+        )
+        if aliname in namespaces:
+            if not messagebox.askyesno("AITD System", getlang("aliexi")):
+                return
+        willnamee = os.path.join(
+            "data",
+            "alignment",
+            "%s.%s.ali" % (seq1sv.get().split("::")[-1], seq2sv.get().split("::")[-1]),
+        )
+        willname = os.path.join(projectpath, willnamee)
+        returns = getattr(aitd.xerlist.ComparatorList, cersv.get())(
+            seq1, seq2, getattr(aitd.xerlist.MatrixList, maxsv.get()), int(gapcb.get())
+        )
+        with open(willname + ".dat", "w") as f:
+            f.write("%d\n%d" % (returns[0], returns[2]))
+        acc1 = ""
+        acc2 = ""
+        for i in returns[1]:
+            acc1 = acc1 + i[0]
+            acc2 = acc2 + i[1]
+        with open(willname, "w") as f:
+            f.write("%s\n%s" % (acc1, acc2))
+        alinam = {
+            "file": willnamee,
+            "opposing": [seq1sv.get(), seq2sv.get()],
+            "data": willnamee + ".dat",
+            "algorithm": cersv.get(),
+            "matrix": maxsv.get(),
+        }
+        namespaces[aliname] = alinam
+        pjset["alignment_list"][aliname] = alinam
+        with open(os.path.join(projectpath, "setting.json"), "w") as f:
+            json.dump(pjset, f)
+        try:
+            treefile.insert(
+                comprr,
+                1,
+                aliname,
+                text=aliname.split("::")[-1]
+                + " -> "
+                + pjset["alignment_list"][aliname]["algorithm"],
+            )
+        except Exception:
+            pass
+        messagebox.showinfo("AITD System", getlang("alisuc"))
+        for i in mainf.winfo_children():
+            i.destroy()
+        # waitinglabel = Label(root, text=getlang("plswat"), fg="black", bg="white")
+        # waitinglabel.place(relx=0, rely=0, relwidth=1, relheight=1)
+        # waitinglabel.config(alpha=0.5)
+        # print(returns)
+
+    seq1la = Label(openframe, text=getlang("seq1la"), bg="white")
+    seq1la.place(x=5, y=10, relwidth=0.15)
+    global seq1sv
+    seq1sv = StringVar()
+    seq1cb = ttk.Combobox(openframe, state="readonly", textvariable=seq1sv)
+    seq1cb["values"] = tuple(seqs)
+    seq1cb.current(0)
+    seq1cb.place(relx=0.2, y=10, relwidth=0.55)
+
+    seq2la = Label(openframe, text=getlang("seq2la"), bg="white")
+    seq2la.place(x=5, y=40, relwidth=0.15)
+    global seq2sv
+    seq2sv = StringVar()
+    seq2cb = ttk.Combobox(openframe, state="readonly", textvariable=seq2sv)
+    seq2cb["values"] = tuple(seqs)
+    seq2cb.current(0)
+    seq2cb.place(relx=0.2, y=40, relwidth=0.55)
+
+    cerla = Label(openframe, text=getlang("cerla"), bg="white")
+    cerla.place(x=5, y=70, relwidth=0.15)
+    global cersv
+    cersv = StringVar()
+    cercb = ttk.Combobox(openframe, state="readonly", textvariable=cersv)
+    cercb["values"] = tuple(aligncholl)
+    cercb.current(0)
+    cercb.place(relx=0.2, y=70, relwidth=0.55)
+
+    maxla = Label(openframe, text=getlang("maxla"), bg="white")
+    maxla.place(x=5, y=100, relwidth=0.15)
+    global maxsv
+    maxsv = StringVar()
+    maxcb = ttk.Combobox(openframe, state="readonly", textvariable=maxsv)
+    maxcb["values"] = tuple(maxrncholl)
+    maxcb.current(0)
+    maxcb.place(relx=0.2, y=100, relwidth=0.55)
+
+    gapla = Label(openframe, text=getlang("gapla"), bg="white")
+    gapla.place(x=5, y=130, relwidth=0.15)
+    global gapcb
+    gapcb = Spinbox(openframe, from_=-100, to=100)
+    gapcb.delete(0, END)
+    gapcb.insert(END, -2)
+    gapcb.place(relx=0.2, y=130, relwidth=0.55)
+
+    # getnumre = Label(openframe, text=getlang("getnumre"), bg="white")
+    # getnumre.place(x=5, y=70, relwidth=0.2)
+    # global getnumrer
+    # getnumrer = Spinbox(openframe, from_=1, to=1000)
+    # getnumrer.place(relx=0.2, y=70, relwidth=0.55)
+    openbutt = ttk.Button(openframe, text=getlang("startdo"), command=startdo)
+    openbutt.place(relx=0.8, y=130, relwidth=0.15)
+
+
+def maketree():
+    global mainf
+    global pjset
+    global symbolchecked
+    global symbolunchecked
+
+    colmainf = Frame(mainf)
+    treetfile = ttk.Treeview(colmainf)
+    treetfile.tag_configure("fggrey", foreground="grey")
+
+    tvbtf = ttk.Scrollbar(colmainf, orient=VERTICAL, command=treetfile.yview)
+    tvbtf.pack(side=RIGHT, fill=Y)
+    tvbtfx = ttk.Scrollbar(colmainf, orient=HORIZONTAL, command=treetfile.xview)
+    tvbtfx.pack(side=BOTTOM, fill=X)
+
+    treetfile.config(yscrollcommand=tvbtf.set)
+    treetfile.config(xscrollcommand=tvbtfx.set)
+
+    # treetfile.heading(text=getlang("treetfileseq"))
+    # treetfile.heading("abstract",text=getlang("treetfileab"))
+
+    treetfile.tag_configure('checked', image=symbolchecked)
+    treetfile.tag_configure('unchecked', image=symbolunchecked)
+
+    def on_checkbox_changed(*args):
+        item_id = treetfile.focus()
+        checkbox_state = treetfile.item(item_id, "tag")
+        if checkbox_state[0] == 'checked':
+            treetfile.item(item_id, tags=('unchecked',))
+        else:
+            treetfile.item(item_id, tags=('checked',))
+
+    seqs, rs = [], 0
+    for i in pjset["sequence_list"]:
+        # with open(os.path.join(projectpath, pjset["sequence_list"][i]["file"])) as f:
+        #     kseq = f.read()
+        seqs.append(treetfile.insert('',0,text=i,values=i))
+        treetfile.item(seqs[rs], tags=('unchecked',))
+        rs += 1
+
+    # print(seqs)
+    treetfile.bind("<<TreeviewSelect>>", on_checkbox_changed)
+
+    treetfile.pack(fill=BOTH, expand=1)
+
+    colmainf.place(relwidth=1,relheight=0.5,relx=0,rely=0)
 
 
 def selection(*args, item=False):
     global nowsthopen
     global ismainfat
     global namespaces
+    # print(nowopen)
+    if not nowopen:
+        return
     if not item:
         try:
             item = treefile.selection()[0]
@@ -837,7 +1065,7 @@ def selection(*args, item=False):
             return
     # print(item)
     canseb = ["seq", "sktch", "ali", "tree"]
-    cansebb = ["rimpseq", "rcomprr"]
+    cansebb = ["rimpseq", "rcomprr", "rtreestree"]
     if item:
         nowtype = item.split("::")[0]
         if (nowtype in canseb) or (item in cansebb):
@@ -865,6 +1093,8 @@ def selection(*args, item=False):
                 importseq()
             elif item == "rcomprr":
                 makealign()
+            elif item == "rtreestree":
+                maketree()
 
 
 openseqbut = ttk.Button(
@@ -883,8 +1113,36 @@ makealib = ttk.Button(
     command=lambda *args: selection(*args, item="rcomprr"),
 )
 makealib.place(rely=0.86, relx=0.05, relwidth=0.4)
+gototre = ttk.Button(
+    sidef,
+    text=getlang("gototre"),
+    command=lambda *args: selection(*args, item="rtreestree"),
+)
+gototre.place(rely=0.86, relx=0.55, relwidth=0.4)
 
 treefile.bind("<ButtonRelease-1>", selection)
+
+
+def mkdir(path):
+    # Renote("%s %s..." % (getword("createdict"), path), end=" ")
+    try:
+        os.makedirs(path)
+    except Exception:
+        pass
+
+
+def mkfile(filename, mode="w"):
+    # Renote("%s %s..." % (getword("createfile"), filename), end=" ")
+    try:
+        open(filename, "w").close()
+        # print(getword("done"))
+        return True
+    except Exception:
+        # print()
+        messagebox.showerror(
+            "AITD System", "%s : %s" % (getlang("filenotcreate"), filename)
+        )
+        return False
 
 
 def openpj(*args, pp=""):
@@ -896,7 +1154,10 @@ def openpj(*args, pp=""):
     if nowopen:
         if not messagebox.askyesno("AITD System", getlang("hasopened")):
             return
+    nowopen = False
     treefile.delete(*treefile.get_children())
+    for i in mainf.winfo_children():
+        i.destroy()
     if pp == "":
         print(pp)
         projectpath = os.path.abspath(
@@ -914,13 +1175,12 @@ def openpj(*args, pp=""):
             return
     else:
         projectpath = pp
-    nowopen = True
     if not os.path.exists(os.path.join(projectpath, "setting.json")):
         messagebox.showerror("AITD System", getlang("notfoundpj"))
         return
     with open(os.path.join(projectpath, "setting.json"), "r") as f:
         pjset = json.load(f)
-    global pjsetting, vscsetting, impseq, impty, treeske, smpty, treestree, tmpty, aicr, osjr, artd, esep, pict, pmpty
+    global pjsetting, vscsetting, impseq, impty, treeske, smpty, treestree, tmpty, aicr, osjr, artd, esep, pict, pmpty, comprr
     # symbolplugin
     pict = treefile.insert("", 0, "pict", text=getlang("pict"), image=symbolplugin)
     # pmpty = treefile.insert(
@@ -988,6 +1248,8 @@ def openpj(*args, pp=""):
 
     root.update()
 
+    nowopen = True
+
     for i in pjset:
         if i in ["sequence_list", "tree_list", "sketch_list", "alignment_list"]:
             for j in pjset[i]:
@@ -1021,10 +1283,83 @@ def openpj(*args, pp=""):
     # print(pjset)
 
 
+def newpj(*args):
+    projectwill = os.path.abspath(
+        os.path.join(
+            filedialog.asksaveasfilename(
+                title="AITD System",
+                filetypes=[
+                    ("Project Setting", "setting.json"),
+                ],
+                defaultextension="setting.json",
+            ),
+            os.pardir,
+        )
+    )
+    mkdir(projectwill)
+    mkdir(os.path.join(projectwill, "input"))
+    mkdir(os.path.join(projectwill, "plugins"))
+    mkfile(os.path.join(projectwill, "plugins", "plugin_list.dat"))
+    mkdir(os.path.join(projectwill, "data"))
+    mkdir(os.path.join(projectwill, "data", "sequence"))
+    mkdir(os.path.join(projectwill, "data", "alignment"))
+    mkdir(os.path.join(projectwill, "data", "tree"))
+    mkdir(os.path.join(projectwill, "data", "correction"))
+    mkdir(os.path.join(projectwill, "training"))
+    mkdir(os.path.join(projectwill, "output"))
+    mkdir(os.path.join(projectwill, "cache"))
+    mkdir(os.path.join(projectwill, "cache", "sketch"))
+    mkdir(os.path.join(projectwill, "cache", "log"))
+    mkfile(os.path.join(projectwill, "setting.json"))
+    with open(os.path.join(projectwill, "setting.json"), "w") as f:
+        json.dump(
+            {
+                "name": os.path.basename(projectwill),
+                "sequence_list": {},
+                "alignment_list": {},
+                "tree_list": {},
+                "sketch_list": {},
+            },
+            f,
+        )
+    mkfile(os.path.join(projectwill, "setting.dat"))
+    openpj(pp=projectwill)
+
+
+def abouabout(*args):
+    aboutpage = Toplevel(root)
+    aboutpage.geometry("450x350")
+    aboutpage.configure(bg="white")
+    aboutpage.resizable(False, False)
+    Label(
+        aboutpage, text="AITD System", bg="white", font=("思源黑体 Normal", 25)
+    ).pack()
+    Label(
+        aboutpage,
+        text="""Copyright 2024 Zhu jingrui, Hu Gaoyuan, Deng Yutong, et al
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.""",
+        bg="white",
+        font=("思源黑体 Normal", 8),
+        justify="left",
+    ).pack()
+    Label(aboutpage,text="To see licenses for other works used in this project, please check .\\licenses\\ !",font=("思源黑体 Normal", 8),bg="white",fg="red").pack()
+
+
 menu = tkinter.Menu(root)
 
 filesubmenu = tkinter.Menu(menu, tearoff=0)
-filesubmenu.add_command(label=getlang("newpj"), accelerator="Ctrl+N")
+filesubmenu.add_command(label=getlang("newpj"), accelerator="Ctrl+N", command=newpj)
 filesubmenu.add_command(label=getlang("openpj"), accelerator="Ctrl+O", command=openpj)
 
 # rcopenpjnemu = tkinter.Menu(filesubmenu, tearoff=0)
@@ -1032,17 +1367,19 @@ filesubmenu.add_command(label=getlang("openpj"), accelerator="Ctrl+O", command=o
 # rcopenpjnemu.add_separator()
 # filesubmenu.add_cascade(label=getlang("rcpj"), menu=rcopenpjnemu)
 
+# filesubmenu.add_separator()
+# filesubmenu.add_command(label=getlang("openseq"), accelerator="Ctrl+Shift+O")
+# filesubmenu.add_command(label=getlang("opencom"), accelerator="Ctrl+Alt+O")
+# filesubmenu.add_separator()
+# filesubmenu.add_command(label=getlang("copypj"), accelerator="Ctrl+Shift+S")
 filesubmenu.add_separator()
-filesubmenu.add_command(label=getlang("openseq"), accelerator="Ctrl+Shift+O")
-filesubmenu.add_command(label=getlang("opencom"), accelerator="Ctrl+Alt+O")
-filesubmenu.add_separator()
-filesubmenu.add_command(label=getlang("copypj"), accelerator="Ctrl+Shift+S")
-filesubmenu.add_separator()
-filesubmenu.add_command(label=getlang("setting"), accelerator="Ctrl+,")
+filesubmenu.add_command(label=getlang("setting"), accelerator="Ctrl+S")
 
 
 helpsubmenu = tkinter.Menu(menu, tearoff=0)
-helpsubmenu.add_command(label=getlang("about_about"), accelerator="Ctrl+H")
+helpsubmenu.add_command(
+    label=getlang("about_about"), accelerator="Ctrl+H", command=abouabout
+)
 helpsubmenu.add_command(label=getlang("helpdoc"), accelerator="Ctrl+D")
 
 menu.add_cascade(label=getlang("file"), menu=filesubmenu)
@@ -1050,6 +1387,11 @@ menu.add_cascade(label=getlang("help"), menu=helpsubmenu)
 
 
 root.config(menu=menu)
+
+root.bind("<Control-o>", openpj)
+root.bind("<Control-h>", abouabout)
+# root.bind("<Control-Shift-s>",copypj)
+# root.bind("<Control-Shift-o>",lambda *args: selection(*args, item="pict"))
 
 openpj(pp="C:\\Users\\87023\\OneDrive\\科创大赛\\AITD System\\test")
 
