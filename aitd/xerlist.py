@@ -17,21 +17,33 @@ class ComparatorList(object):
 class TreePlanterList(object):
     def __init__(self):
         pass
+
     def add(self, name, treePlanter):
         setattr(self, name, treePlanter)
 
-class ProcessorList(object):
-    def __init__(self):
-        pass
-    def add(self, name, processor):
-        setattr(self, name, processor)
+
+# class ProcessorList(object):
+#     def __init__(self):
+#         pass
+#     def add(self, name, processor):
+#         setattr(self, name, processor)
 
 
 class DisplayList(object):
     def __init__(self):
         pass
+
     def add(self, name, display):
         setattr(self, name, display)
+
+
+class MatrixList(object):
+    def __init__(self):
+        pass
+
+    def add(self, name, matrix):
+        setattr(self, name, matrix)
+
 
 ParserList = ParserList()
 
@@ -39,6 +51,8 @@ ComparatorList = ComparatorList()
 
 TreePlanterList = TreePlanterList()
 
-ProcessorList = ProcessorList()
+# ProcessorList = ProcessorList()
 
 DisplayList = DisplayList()
+
+MatrixList = MatrixList()
