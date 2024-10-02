@@ -3,11 +3,68 @@ import aitd
 import json
 import pickle
 import yaml
+import zipfile
 from colorama import Fore, Back, Style
 
 argv = sys.argv
 
 programdict = os.path.dirname(os.path.abspath(__file__))
+
+
+####################
+# I'M HERE!!!      #
+####################
+# 以下为所需的接口
+
+def getName(name):  # 获得程序生成的唯一名称
+    return
+
+SpeciesList = [...] # 用于存储已经创建的物种
+SeqMap = {"":[...]} # 用于将序列和物种一一对应
+
+def saveSetting(projectDict):
+    with open(projectDict + "setting.json") as setting:
+        settingData = json.load(setting)
+        for species in SpeciesList:
+            for seq in SeqMap[species]:
+                settingData["sequence_list"]["seq::" + seq] = species
+                
+def getNamespace(namespace):
+    return
+
+def getObject(str):
+    with open(programdict + "setting.json") as js:
+        contents = json.read(js)
+
+#endif  // 乱入
+
+helps = """
++-----------------------------------------------------------------+
+|                          AITD System                            |
+|  A systematic phylogenetic tree drawing and species evolution   |
+|                 path inference system based on                  |
+|         specific macromolecular sequence alignment and          |
+|            automatic sequence screening techniques.             |
++=================================================================+
+| Commands """ + Style.BRIGHT + "(Normal Mode)" + Style.RESET_ALL + """                                          |
++-----------------+-----------------------------------------------+
+| setting         | setting <option> <value>                      |
+| new             | new <type> <name> [<parameter>]               |
+| open            | open [<name>]                                 |
+| debug           | debug [on|off]                                |
+| exit            |                                               |
++=================+===============================================+
+| Commands """ + Fore.CYAN + "(Debug mode)" + Style.RESET_ALL + """                                           |
++-----------------------------------------------------------------+
+| (You can directly run a single line of Python code)             |
++=================================================================+
+| Commands """ + Fore.MAGENTA + "(Project Mode)" + Style.RESET_ALL + """                                         |
++-----------------+-----------------------------------------------+
+|                 |                                               |
++=================+===============================================+
+| Welcome to AITD System!                                         |
++-----------------------------------------------------------------+
+"""
 
 
 def Fatal(message):
@@ -99,55 +156,30 @@ def mkfile(filename, mode="w"):
         return False
 
 
-print(
-    """
-+-----------------------------------------------------------------+
-|                          AITD System                            |
-|  A systematic phylogenetic tree drawing and species evolution   |
-|                 path inference system based on                  |
-|         specific macromolecular sequence alignment and          |
-|            automatic sequence screening techniques.             |
-+=================================================================+
-| Commands """ + Style.BRIGHT + "(Normal Mode)" + Style.RESET_ALL + """                                          |
-+-----------------+-----------------------------------------------+
-| setting         | setting <option> <value>                      |
-| new             | new <type> <name> [<parameter>]               |
-| open            | open [<name>]                                 |
-| debug           | debug [on|off]                                |
-| exit            |                                               |
-+=================+===============================================+
-| Commands """ + Fore.CYAN + "(Debug mode)" + Style.RESET_ALL + """                                           |
-+-----------------------------------------------------------------+
-| (You can directly run a single line of Python code)             |
-+=================================================================+
-| Commands """ + Fore.MAGENTA + "(Project Mode)" + Style.RESET_ALL + """                                         |
-+-----------------+-----------------------------------------------+
-|                 |                                               |
-+=================+===============================================+
-| Welcome to AITD System!                                         |
-+-----------------------------------------------------------------+
-"""
-)
+print(helps)
 
-nowproject = ""
+nowProject = ""
 debug = False
 
 while True:
-    if nowproject == "":
-        ouinput = 'AITD "%s"> ' % os.getcwd()
+    if nowProject == "":
+        ouInput = 'AITD "%s"> ' % os.getcwd()
     else:
-        ouinput = (
+        ouInput = (
             'AITD "%s" ' % os.getcwd()
             + Fore.MAGENTA
-            + 'with the project "%s"' % nowproject
+            + 'with the project "%s"' % nowProject
             + Style.RESET_ALL
             + ">"
         )
     if debug:
-        ouinput = Fore.CYAN + "[DEBUG] " + Style.RESET_ALL + ouinput
-    command = input(ouinput).split()
+        ouInput = Fore.CYAN + "[DEBUG] " + Style.RESET_ALL + ouInput
+    oriInput = input(ouInput)
+    command = oriInput.split()
     if len(command) == 0:
         continue
+    elif command[0] == "clear":
+        os.system("cls")
     elif command[0] == "setting":
         if len(command) < 3:
             Error(getword("synerr"))
@@ -195,15 +227,15 @@ while True:
         if len(command) == 2:
             try:
                 os.chdir(os.path.join(os.getcwd(), command[1]))
-                nowproject = command[1]
+                nowProject = command[1]
             except FileNotFoundError:
                 Error(getword("notpjdict"))
-                nowproject = ""
+                nowProject = ""
                 continue
         else:
-            nowproject = os.path.split(os.getcwd())[1]
+            nowProject = os.path.split(os.getcwd())[1]
         # try:
-        #     nowproject = command[1]
+        #     nowProject = command[1]
         # except IndexError:
         #     Error(getword("synerr"))
         #     Note("%s : open <name>" % getword("usage"))
@@ -214,7 +246,7 @@ while True:
                     Warning(getword("warnbasic"))
         except Exception:
             Error(getword("wpj"))
-            nowproject = ""
+            nowProject = ""
             continue
     elif command[0] == "debug":
         if len(command) == 1 or command[1] == "on":
@@ -226,8 +258,13 @@ while True:
             Note("%s : debug [on|off]" % getword("usage"))
             continue
     elif command[0] == "exit":
-        Note(getword("exit"))
-        print(
+        if nowProject != "":
+            Note(getword("exitpj"))
+            os.chdir(os.path.join(os.getcwd(), ".."))
+            nowProject = ""
+        else:
+            Note(getword("exit"))
+            print(
             """
 +-----------------------------------------------------------------+
 |                          AITD System                            |
@@ -265,8 +302,10 @@ while True:
 | and limitations under the License.                              |
 +-----------------------------------------------------------------+
 """
-        )
-        exit(0)
+            )
+            exit(0)
+    elif command[0] == "help":
+        print(helps)
     else:
         if debug:
             try:
@@ -274,14 +313,131 @@ while True:
             except Exception as e:
                 Error(e)
             continue
-        if nowproject != "":
-            if command[0] == "exit":
-                Note(getword("exitpj"))
-                os.chdir(os.path.join(os.getcwd(), ".."))
-                nowproject = ""
+        if nowProject != "":
+            if command[0] == "import":
+                fileCommand = oriInput.split("\"")
+                if len(fileCommand == 3):
+                    files = fileCommand[2].split(" ")
+                    seqName = fileCommand[1]
+
+                    name = getName(seqName)
+                    seqs = [...]
+                    DefaultParser = getattr(aitd.xerlist.ParserList, "aitd-fasta")
+                    
+                    if len(files) == 2:
+                        Par = files[1]
+                        DefaultParser = getattr(aitd.xerlist.ParserList, Par)
+                        
+                    aitd.readFile(files[0], DefaultParser, seqs)
+                    
+                    for seq in seqs:
+                        with open(programdict + name + ".seq",'a') as f:
+                            f.write(seq.sequence)
+                        with open(programdict + name + ".metadata",'a') as f:
+                            f.write(seq.metadata)
+                else:
+                    Error(getword("synerr"))
+                    Note("%s : import <name> <file> [<parser>]" % getword("usage"))
+            elif command[0] == "species":
+                fullCommand = oriInput.split("\"")
+                if len(fullCommand) == 2:
+                    speciesName = getName(fullCommand[1])
+                    SpeciesList.extend(speciesName)
+                else:
+                    Error(getword("synerr"))
+                    Note("%s : species <name>" % getword("usage"))
+            elif command[0] == "add":
+                if len(command) == 3:
+                    if command[1] in SeqMap.keys():
+                        SeqMap[command[1]].extend(command[2])
+                    else:
+                        SeqMap[command[1]] = [...]
+                        SeqMap[command[1]].extend(command[2])
+                else:
+                    Error(getword("synerr"))
+                    Note("%s : add <species> <name>" % getword("usage"))
+            elif command[0] == "del":
+                if len(command) == 2:
+                    while True:
+                        c = input(getword("confirmSpeciesDel"))
+                        if c == 'y':
+                            del SeqMap[command[1]]
+                            break
+                        if c == 'n':
+                            break
+                if len(command) == 3:
+                    while True:
+                        c = input(getword("confirmSeqDel"))
+                        if c == 'y':
+                            del SeqMap[command[1]][c]
+                            break
+                        if c == 'n':
+                            break
+            elif command[0] == "parameter":
+                if command[1] == "get" and len(command) == 4:
+                    with open(programdict + "setting.json") as js:
+                        output = ""
+                        dicts = js.read()
+                        if command[2].split("::")[0] == "seq":
+                            output = dicts["sequence_list"][command[2]][command[3]]
+                        elif command[2].split("::")[0] == "ali":
+                            output = dicts["alignment_list"][command[2]][command[3]]
+                        elif command[2].split("::")[0] == "tree":
+                            output = dicts["tree_list"][command[2]][command[3]]
+                        elif command[2].split("::")[0] == "sktch":
+                            output = dicts["sketch_list"][command[2]][command[3]]
+                        print(output)
+                elif command[1] == "set" and len(command) == 5:
+                    with open(programdict + "setting.json") as js:
+                        dicts = js.read()
+                        if command[2].split("::")[0] == "seq":
+                            dicts["sequence_list"][command[2]][command[3]] = command[4]
+                        elif command[2].split("::")[0] == "ali":
+                            dicts["alignment_list"][command[2]][command[3]] = command[4]
+                        elif command[2].split("::")[0] == "tree":
+                            dicts["tree_list"][command[2]][command[3]] = command[4]
+                        elif command[2].split("::")[0] == "sktch":
+                            dicts["sketch_list"][command[2]][command[3]] = command[4]
+                else:
+                    Error(getword("synerr"))
+                    Note("%s : parameter set <object> <key> <value>" % getword("usage"))
+                    Note("%s : parameter get <object> <key>" % getword("usage"))
+            elif command[0] == "align":
+                if command[1] == "seq":
+                    defaultComparator = getattr(aitd.xerlist.ComparatorList, "needleman-wunsch")
+                    defaultMatrix = "God know what it is"
+                    
+                    if len(command) == 5:
+                        if command[4].split("=")[0] == "comparator" and command[5].split("=")[0] == "matrix":
+                            # comparator
+                            cmp = command[4].split("=")[1]
+                            namespace = getNamespace(cmp.split("::")[0])
+                            fun = cmp.split("::")[1]
+                            defaultComparator = getattr(namespace, fun)
+                            
+                            # matrix
+                            cmp = command[5].split("=")[1]
+                            namespace = getNamespace(cmp.split("::")[0])
+                            mat = cmp.split("::")[1]
+                            defaultMatrix = getattr(namespace, mat)
+                    if len(command) == 4:
+                        if command[4].split("=")[0] == "comparator":
+                            cmp = command[4].split("=")[1]
+                            namespace = getNamespace(cmp.split("::")[0])
+                            fun = cmp.split("::")[1]
+                            defaultComparator = getattr(namespace, fun)
+                            
+                    print("align seq1 and seq2 with cmp and mat")
+                    
+                    
+                elif command[1] == "species":
+                    a=a
+                    # To be continued...
+
             ################################################################
             # HERE!!!!!!!!                                                 #
             ################################################################
             continue
         Error(getword("invcmd"))
         continue
+
