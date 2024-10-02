@@ -62,6 +62,7 @@ def needleman_wunsch(seq1, seq2, matrix, gap=-2):
     Returns:
         score (int): 对齐的分数
         alignment (list): 最佳对对齐的矩阵
+        distance (int): 两序列间的距离
     """
     rows = len(seq1) + 1
     cols = len(seq2) + 1
