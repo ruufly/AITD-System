@@ -29,12 +29,41 @@ def saveSetting(projectDict):
             for seq in SeqMap[species]:
                 settingData["sequence_list"]["seq::" + seq] = species
                 
-def getNamespace(namespace):
+def getNamespace(namespace): # 用于获取命名空间名所在位置
     return
 
 def getObject(str):
     with open(programdict + "setting.json") as js:
         contents = json.read(js)
+        
+def alignmentSeq(str1, str2):
+    with open(os.path.join(programdict, "setting.json"), "r") as js:
+        strSeq1 = str1
+        strSeq2 = str2
+        data = js.read()
+        file1 = data["sequence_list"][strSeq1]["file"]
+        file2 = data["sequence_list"][strSeq2]["file"]
+        seq1 = seq2 = ""
+        with open(file1, "r") as f:
+            seq1 = f.read()
+        with open(file2, "r") as f:
+            seq2 = f.read()
+        score, alignment, distant = defaultComparator(seq1, seq2, defaultMatrix)
+        if os.path.exists(os.path.join(programdict, "data", "alignment", strSeq1 + "." + strSeq2 + ".ali")):
+            with open(os.path.join(programdict, "data", "alignment", strSeq1 + "." + strSeq2 + ".ali"), 'w') as ali:
+                ali.write(alignment[0] + "\n")
+                ali.write(alignment[1])
+        else:
+            with open(os.path.join(programdict, "data", "alignment", strSeq1 + "." + strSeq2 + ".ali"), 'x') as ali:
+                ali.write(alignment[0] + "\n")
+                ali.write(alignment[1])
+                
+        if os.path.exists(os.path.join(programdict, "data", "alignment", strSeq1 + "." + strSeq2 + ".ali.dat")):
+            with open(os.path.join(programdict, "data", "alignment", strSeq1 + "." + strSeq2 + ".ali.dat"), 'w') as ali:
+                ali.write(score + "\n" + distant)
+        else:
+            with open(os.path.join(programdict, "data", "alignment", strSeq1 + "." + strSeq2 + ".ali.dat"), 'x') as ali:
+                ali.write(score + "\n" + distant)
 
 #endif  // 乱入
 
@@ -331,10 +360,19 @@ while True:
                     aitd.readFile(files[0], DefaultParser, seqs)
                     
                     for seq in seqs:
-                        with open(programdict + name + ".seq",'a') as f:
-                            f.write(seq.sequence)
-                        with open(programdict + name + ".metadata",'a') as f:
-                            f.write(seq.metadata)
+                        if os.path.exists(os.path.join(programdict, "data", "sequence", name + ".seq")):
+                            with open(programdict + name + ".seq", 'w') as f:
+                                f.write(seq.sequence)
+                        else:
+                            with open(programdict + name + ".seq", 'x') as f:
+                                f.write(seq.sequence)
+                                
+                        if os.path.exists(os.path.join(programdict, "data", "sequence", name + ".metadata")):
+                            with open(programdict + name + ".metadata", 'w') as f:
+                                f.write(seq.metadata)
+                        else:
+                            with open(programdict + name + ".seq", 'x') as f:
+                                f.write(seq.sequence)
                 else:
                     Error(getword("synerr"))
                     Note("%s : import <name> <file> [<parser>]" % getword("usage"))
@@ -398,41 +436,73 @@ while True:
                             dicts["tree_list"][command[2]][command[3]] = command[4]
                         elif command[2].split("::")[0] == "sktch":
                             dicts["sketch_list"][command[2]][command[3]] = command[4]
+                            
+                        json.dump(dicts, js)
                 else:
                     Error(getword("synerr"))
                     Note("%s : parameter set <object> <key> <value>" % getword("usage"))
                     Note("%s : parameter get <object> <key>" % getword("usage"))
             elif command[0] == "align":
                 if command[1] == "seq":
-                    defaultComparator = getattr(aitd.xerlist.ComparatorList, "needleman-wunsch")
+                    defaultComparator = getattr(aitd.xerlist.ComparatorList, "ComparatorList::needleman-wunsch")
                     defaultMatrix = "God know what it is"
                     
-                    if len(command) == 5:
-                        if command[4].split("=")[0] == "comparator" and command[5].split("=")[0] == "matrix":
-                            # comparator
-                            cmp = command[4].split("=")[1]
-                            namespace = getNamespace(cmp.split("::")[0])
-                            fun = cmp.split("::")[1]
-                            defaultComparator = getattr(namespace, fun)
-                            
-                            # matrix
-                            cmp = command[5].split("=")[1]
-                            namespace = getNamespace(cmp.split("::")[0])
-                            mat = cmp.split("::")[1]
-                            defaultMatrix = getattr(namespace, mat)
-                    if len(command) == 4:
-                        if command[4].split("=")[0] == "comparator":
-                            cmp = command[4].split("=")[1]
-                            namespace = getNamespace(cmp.split("::")[0])
-                            fun = cmp.split("::")[1]
-                            defaultComparator = getattr(namespace, fun)
-                            
+                    if len(command) > 4:
+                        for i in range(4, len(command) + 1):
+                            if command[i].split("=")[0] == "comparator":
+                                # comparator
+                                cmp = command[i].split("=")[1]
+                                namespace = getNamespace(cmp.split("::")[0])
+                                defaultComparator = getattr(namespace, cmp)
+                            elif command[i].split("=")[0] == "matrix":
+                                # matrix
+                                mat = command[5].split("=")[1]
+                                namespace = getNamespace(cmp.split("::")[0])
+                                defaultMatrix = getattr(namespace, mat)
+                    
                     print("align seq1 and seq2 with cmp and mat")
                     
-                    
+                    alignmentSeq(command[1], command[2])
+
                 elif command[1] == "species":
-                    a=a
+                    pass
                     # To be continued...
+                    
+            elif command[0] == "tree":
+                try:
+                    n = int(command[1])
+                    
+                    if len(command) > n + 1:
+                        defaultPlanter = getattr(aitd.xerlist.TreePlanterList, "TreePlanterList::UPGMA")
+                        defaultComparator = getattr(aitd.xerlist.ComparatorList, "ComparatorList::needleman-wunsch")
+                        defaultMatrix = "God it"
+                        isSave = True
+                        if len(command) > n + 2:
+                            for i in range(n + 2, len(command) + 1):
+                                if command[i].split("=")[0] == "planter":
+                                    planter = command[i].split("=")[1]
+                                    namespace = planter.split("::")[0]
+                                    defaultPlanter = getattr(getNamespace(namespace), planter)
+                                elif command[i].split("=")[0] == "comparator":
+                                    cmp = command[i].split("=")[1]
+                                    namespace = getNamespace(cmp.split("::")[0])
+                                    defaultComparator = getattr(namespace, cmp)
+                                elif command[i].split("=")[0] == "matrix":
+                                    mat = command[5].split("=")[1]
+                                    namespace = getNamespace(cmp.split("::")[0])
+                                    defaultMatrix = getattr(namespace, mat)
+                                elif command[i].split("=")[0] == "savealign":
+                                    isSave = (command[i].split("=")[1].lower() == "true")
+                        with open(os.path.join(programdict, "setting.json")) as js:
+                            data = js.read()
+                            for i in range(2, n + 2):
+                                for j in range(i, n + 2):
+                                    pass # To be continued...
+                except:
+                    Error(getword("synerr"))
+                    Note("%s : tree <seqNum> <seq1> <seq2> <seq3>... [<parameter>]" % getword("usage"))
+                
+                    
 
             ################################################################
             # HERE!!!!!!!!                                                 #
