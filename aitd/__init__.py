@@ -20,15 +20,43 @@ def FASTA_parser(data):
 setattr(xerlist.ParserList, "ParserList::aitd-fasta", FASTA_parser)
 
 
-def needleman_wunsch(seq1, seq2, match=5, mismatch=-4, gap=-2):
+def BLAST(pos1, pos2):
+    if pos1 == pos2:
+        return 5
+    else:
+        return -4
+
+
+setattr(xerlist.MatrixList, "MatrixList::BLAST", BLAST)
+
+
+def transition_transversion(pos1, pos2):
+    if pos1 == pos2:
+        return 1
+    elif (
+        (pos1 == "A" and pos2 == "G")
+        or (pos2 == "A" and pos1 == "G")
+        or (pos1 == "T" and pos2 == "C")
+        or (pos2 == "T" and pos1 == "C")
+    ):
+        return -1
+    else:
+        return -5
+
+
+setattr(
+    xerlist.MatrixList, "MatrixList::transition-transversion", transition_transversion
+)
+
+
+def needleman_wunsch(seq1, seq2, matrix, gap=-2):
     """
     Needleman-Wunsch 算法实现
 
     Args:
         seq1 (str): 第一个序列
         seq2 (str): 第一个序列
-        match (int): 匹配的分数
-        mismatch (int): 不匹配的分数
+        matrix (int): 打分矩阵
         gap (int): 插入或删除间隙的分数
 
     Returns:
@@ -46,9 +74,10 @@ def needleman_wunsch(seq1, seq2, match=5, mismatch=-4, gap=-2):
 
     for i in range(1, rows):
         for j in range(1, cols):
-            match_score = score_matrix[i - 1][j - 1] + (
-                match if seq1[i - 1] == seq2[j - 1] else mismatch
-            )
+            match_score = score_matrix[i - 1][j - 1] + matrix(seq1[i - 1], seq2[j - 1])
+            # (
+            #     match if seq1[i - 1] == seq2[j - 1] else mismatch
+            # )
             delete_score = score_matrix[i - 1][j] + gap
             insert_score = score_matrix[i][j - 1] + gap
             score_matrix[i][j] = max(match_score, delete_score, insert_score)
@@ -61,9 +90,10 @@ def needleman_wunsch(seq1, seq2, match=5, mismatch=-4, gap=-2):
         score_up = score_matrix[i - 1][j]
         score_left = score_matrix[i][j - 1]
 
-        if score_current == score_diag + (
-            match if seq1[i - 1] == seq2[j - 1] else mismatch
-        ):
+        if score_current == score_diag + matrix(seq1[i - 1], seq2[j - 1]):
+            # (
+            #     match if seq1[i - 1] == seq2[j - 1] else mismatch
+            # ):
             alignment.append((seq1[i - 1], seq2[j - 1]))
             i -= 1
             j -= 1
@@ -83,25 +113,31 @@ def needleman_wunsch(seq1, seq2, match=5, mismatch=-4, gap=-2):
 
     alignment.reverse()
 
-    return score_matrix[-1][-1], alignment
-
-
-setattr(xerlist.ComparatorList, "ComparatorList::needleman-wunsch", needleman_wunsch)
-
-
-def process_NW(seq1, seq2):
-    alignment = getattr(xerlist.ComparatorList, "ComparatorList::needleman-wunsch")(
-        seq1, seq2
-    )[1]
     ans = len(alignment)
 
     for i in alignment:
         if i[0] == i[1]:
             ans -= 1
-    return ans
+
+    return score_matrix[-1][-1], alignment, ans
 
 
-setattr(xerlist.ProcessorList, "ProcessorList::needleman-wunsch", process_NW)
+setattr(xerlist.ComparatorList, "ComparatorList::needleman-wunsch", needleman_wunsch)
+
+
+# def process_NW(seq1, seq2):
+#     alignment = getattr(xerlist.ComparatorList, "ComparatorList::needleman-wunsch")(
+#         seq1, seq2
+#     )[1]
+#     ans = len(alignment)
+
+#     for i in alignment:
+#         if i[0] == i[1]:
+#             ans -= 1
+#     return ans
+
+
+# setattr(xerlist.ProcessorList, "ProcessorList::needleman-wunsch", process_NW)
 
 if __name__ == "__main__":
     seq1 = "GATTACA"
