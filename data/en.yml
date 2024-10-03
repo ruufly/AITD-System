@@ -46,7 +46,7 @@ notfoundpj: Project directory not found!
 
 pjsetting: Setting file
 vscsetting: Basic settings
-impseq: Imported sequence
+impseq: Sequences
 impty: (Empty)
 smpty: (Empty)
 pmpty: (Empty)
@@ -81,3 +81,51 @@ transition: Transition
 transversion: Transversion
 inallofpm: In all of the point mutations
 msuccess: Match successful
+
+openwhich: File position
+browse: Browse
+openseqbut: Open Sequence
+plibut: Import Plug-in
+parserlab: Choose parser
+openit: Open
+previewslab: Sequence Preview
+previewmlab: Metadata Preview
+getnumre: Sequence Number
+toomany: Too many sequences needed to read
+previewsetset: Sequence Type
+previewsetsetlet: Namespace Name
+previewendbut: Submit
+errornamespacename: Namespace name already exists or has something wrong\
+makealib: Alignment
+gototre: Tree generating
+
+seq1la: Sequence 1
+seq2la: Sequence 2
+cerla: Comparator
+maxla: Matrix
+gapla: Gap Penalty
+startdo: Start
+sameseq: Same Sequences
+plswat: Please wait for a while
+alisuc: Success
+aliexi: The sequence alignment result already exists. Do you want to replace it?
+
+treetfileseq: Sequence
+treetfileab: Abstract of the sequence
+
+autoalign: Automatically compare sequences without alignment data
+saveautoalign: Save automatically compared data
+submittree: Submit
+clbl: Select sequence
+needmorethanthree: Too less sequences
+noali: Alignment not found
+planter: Tree generator
+successmake: Success
+
+gotosre: Make sketch
+seltre: Select a tree
+displayer: Renderer
+startrn: Start rendering
+typecc: File type
+
+elbl: Tree data
