@@ -16,8 +16,11 @@ programdict = os.path.dirname(os.path.abspath(__file__))
 ####################
 # 以下为所需的接口
 
+def treeModel():
+    pass
+
 def getName(name):  # 获得程序生成的唯一名称
-    return
+    pass
 
 SpeciesList = [...] # 用于存储已经创建的物种
 SeqMap = {"":[...]} # 用于将序列和物种一一对应
@@ -30,41 +33,12 @@ def saveSetting(projectDict):
                 settingData["sequence_list"]["seq::" + seq] = species
                 
 def getNamespace(namespace): # 用于获取命名空间名所在位置
-    return
+    pass
 
 def getObject(str):
     with open(programdict + "setting.json") as js:
         contents = json.read(js)
         
-def alignmentSeq(str1, str2):
-    with open(os.path.join(programdict, "setting.json"), "r") as js:
-        strSeq1 = str1
-        strSeq2 = str2
-        data = js.read()
-        file1 = data["sequence_list"][strSeq1]["file"]
-        file2 = data["sequence_list"][strSeq2]["file"]
-        seq1 = seq2 = ""
-        with open(file1, "r") as f:
-            seq1 = f.read()
-        with open(file2, "r") as f:
-            seq2 = f.read()
-        score, alignment, distant = defaultComparator(seq1, seq2, defaultMatrix)
-        if os.path.exists(os.path.join(programdict, "data", "alignment", strSeq1 + "." + strSeq2 + ".ali")):
-            with open(os.path.join(programdict, "data", "alignment", strSeq1 + "." + strSeq2 + ".ali"), 'w') as ali:
-                ali.write(alignment[0] + "\n")
-                ali.write(alignment[1])
-        else:
-            with open(os.path.join(programdict, "data", "alignment", strSeq1 + "." + strSeq2 + ".ali"), 'x') as ali:
-                ali.write(alignment[0] + "\n")
-                ali.write(alignment[1])
-                
-        if os.path.exists(os.path.join(programdict, "data", "alignment", strSeq1 + "." + strSeq2 + ".ali.dat")):
-            with open(os.path.join(programdict, "data", "alignment", strSeq1 + "." + strSeq2 + ".ali.dat"), 'w') as ali:
-                ali.write(score + "\n" + distant)
-        else:
-            with open(os.path.join(programdict, "data", "alignment", strSeq1 + "." + strSeq2 + ".ali.dat"), 'x') as ali:
-                ali.write(score + "\n" + distant)
-
 #endif  // 乱入
 
 helps = """
@@ -415,7 +389,7 @@ while True:
                 if command[1] == "get" and len(command) == 4:
                     with open(programdict + "setting.json") as js:
                         output = ""
-                        dicts = js.read()
+                        dicts = json.load(js.read())
                         if command[2].split("::")[0] == "seq":
                             output = dicts["sequence_list"][command[2]][command[3]]
                         elif command[2].split("::")[0] == "ali":
@@ -427,7 +401,7 @@ while True:
                         print(output)
                 elif command[1] == "set" and len(command) == 5:
                     with open(programdict + "setting.json") as js:
-                        dicts = js.read()
+                        dicts = json.load(js.read())
                         if command[2].split("::")[0] == "seq":
                             dicts["sequence_list"][command[2]][command[3]] = command[4]
                         elif command[2].split("::")[0] == "ali":
@@ -444,7 +418,7 @@ while True:
                     Note("%s : parameter get <object> <key>" % getWord("usage"))
             elif command[0] == "align":
                 if command[1] == "seq":
-                    defaultComparator = getattr(aitd.xerlist.ComparatorList, "ComparatorList::needleman-wunsch")
+                    defaultComparator = "ComparatorList::needleman-wunsch"
                     defaultMatrix = "God know what it is"
                     
                     if len(command) > 4:
@@ -452,8 +426,7 @@ while True:
                             if command[i].split("=")[0] == "comparator":
                                 # comparator
                                 cmp = command[i].split("=")[1]
-                                namespace = getNamespace(cmp.split("::")[0])
-                                defaultComparator = getattr(namespace, cmp)
+                                defaultComparator = cmp
                             elif command[i].split("=")[0] == "matrix":
                                 # matrix
                                 mat = command[5].split("=")[1]
@@ -462,7 +435,42 @@ while True:
                     
                     print("align seq1 and seq2 with cmp and mat")
                     
-                    alignmentSeq(command[1], command[2])
+                    with open(os.path.join(programdict, "setting.json"), "r") as js:
+                        strSeq1 = command[2].split("::")[1]
+                        strSeq2 = command[3].split("::")[1]
+                        data = json.load(js.read())
+                        file1 = data["sequence_list"][command[2]]["file"]
+                        file2 = data["sequence_list"][command[3]]["file"]
+                        seq1 = seq2 = ""
+                        with open(file1, "r") as f:
+                            seq1 = f.read()
+                        with open(file2, "r") as f:
+                            seq2 = f.read()
+                        score, alignment, distant = getattr(getNamespace(defaultComparator.split("::")[0]), defaultComparator)(seq1, seq2, defaultMatrix)
+                        if os.path.exists(os.path.join(programdict, "data", "alignment", command[2] + "." + command[3] + ".ali")):
+                            with open(os.path.join(programdict, "data", "alignment", command[2] + "." + command[3] + ".ali"), 'w') as ali:
+                                ali.write(alignment[0] + "\n")
+                                ali.write(alignment[1])
+                        else:
+                            with open(os.path.join(programdict, "data", "alignment", command[2] + "." + command[3] + ".ali"), 'x') as ali:
+                                ali.write(alignment[0] + "\n")
+                                ali.write(alignment[1])
+                                
+                        if os.path.exists(os.path.join(programdict, "data", "alignment", command[2] + "." + command[3] + ".ali.dat")):
+                            with open(os.path.join(programdict, "data", "alignment", command[2] + "." + command[3] + ".ali.dat"), 'w') as ali:
+                                ali.write(score + "\n" + distant)
+                        else:
+                            with open(os.path.join(programdict, "data", "alignment", command[2] + "." + command[3] + ".ali.dat"), 'x') as ali:
+                                ali.write(score + "\n" + distant)
+                        data["alignment_list"][command[2] + "." + command[3]] = {
+                            "file": repr(os.path.join("data","alignment",strSeq1 + "." + strSeq2 + ".ali")),
+                            "opposing": [
+                                command[2],command[3]
+                                ],
+                            "data": repr(os.path.join("data", "alignment", strSeq1 + "." + strSeq2 + ".ali.dat")),
+                            "algorithm": defaultComparator
+                        }
+
 
                 elif command[1] == "species":
                     pass
@@ -493,16 +501,79 @@ while True:
                                     defaultMatrix = getattr(namespace, mat)
                                 elif command[i].split("=")[0] == "savealign":
                                     isSave = (command[i].split("=")[1].lower() == "true")
+                                    
+                        sequenceList = [aitd.Sequence("", "", "")]
+                        disMatrix = [[...],...]
+                        name = ""
                         with open(os.path.join(programdict, "setting.json")) as js:
-                            data = js.read()
+                            data = json.load(js.read())
                             for i in range(2, n + 2):
+                                seqFile = data["sequence_list"][command[i]]["file"]
+                                name += command[i] + "."
+                                with open(seqFile,'r') as file:
+                                    sequenceList.append(aitd.Sequence("gene", command[i], file.read()))
                                 for j in range(i, n + 2):
-                                    pass # To be continued...
+                                    file1 = data["sequence_list"][command[i]]["file"]
+                                    file2 = data["sequence_list"][command[j]]["file"]
+                                    seq1 = seq2 = ""
+                                    
+                                    with open(file1, 'r') as file:
+                                        seq1 = file.read()
+                                    with open(file2, 'r') as file:
+                                        seq2 = file.read()
+                                        
+                                    score, alignment, distant = defaultComparator(seq1, seq2, defaultMatrix)
+                                    disMatrix[i - 1][j - 1] = distant
+                                    if isSave:
+                                        if os.path.exists(os.path.join(programdict, "data", "alignment", command[2] + "." + command[3] + ".ali")):
+                                            with open(os.path.join(programdict, "data", "alignment", command[2] + "." + command[3] + ".ali"), 'w') as ali:
+                                                ali.write(alignment[0] + "\n")
+                                                ali.write(alignment[1])
+                                        else:
+                                            with open(os.path.join(programdict, "data", "alignment", command[2] + "." + command[3] + ".ali"), 'x') as ali:
+                                                ali.write(alignment[0] + "\n")
+                                                ali.write(alignment[1])
+                                                
+                                        if os.path.exists(os.path.join(programdict, "data", "alignment", command[2] + "." + command[3] + ".ali.dat")):
+                                            with open(os.path.join(programdict, "data", "alignment", command[2] + "." + command[3] + ".ali.dat"), 'w') as ali:
+                                                ali.write(score + "\n" + distant)
+                                        else:
+                                            with open(os.path.join(programdict, "data", "alignment", command[2] + "." + command[3] + ".ali.dat"), 'x') as ali:
+                                                ali.write(score + "\n" + distant)
+                                        data["alignment_list"][command[2] + "." + command[3]] = {
+                                            "file": repr(os.path.join("data","alignment",strSeq1 + "." + strSeq2 + ".ali")),
+                                            "opposing": [
+                                                command[2],command[3]
+                                                ],
+                                            "data": repr(os.path.join("data", "alignment", strSeq1 + "." + strSeq2 + ".ali.dat")),
+                                            "algorithm": defaultComparator
+                                        }
+
+                            lis1, lis2 = aitd.UPGMA(sequenceList, disMatrix)
+                            with open(os.path.join(programdict, "data", "tree", name + "tree"), 'wb') as file:
+                                pickle.dump((lis1,lis2), file)
                 except:
                     Error(getWord("synerr"))
                     Note("%s : tree <seqNum> <seq1> <seq2> <seq3>... [<parameter>]" % getWord("usage"))
                 
-                    
+            elif command[0] == "correct":
+                try:
+                    namespace = getNamespace(command[1].split("::")[0])
+                    model = getattr(namespace, command[1])
+                    n = int(command[3])
+                    pass
+                except:
+                    pass
+                
+            elif command[0] == "list":
+                with open(os.path.join(programdict, "setting.json"), 'r') as js:
+                    data = json.load(js.read())
+                    if command[1] == "seq":
+                        for key, val in data["sequence_list"].items():
+                            print(key, end=": ")
+                            print(val["name"])
+                    elif command[1] == "ali":
+                        pass
 
             ################################################################
             # HERE!!!!!!!!                                                 #
