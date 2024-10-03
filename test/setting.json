@@ -40,6 +40,18 @@
             "type": "gene",
             "description": "SCO2 synthesis of cytochrome C oxidase 2 [ Homo sapiens (human) ]",
             "from": "NCBI"
+        },
+        "seq::ABC": {
+            "file": "data\\sequence\\ABC.seq",
+            "name": "ABC",
+            "metadata": "data\\sequence\\ABC.metadata",
+            "type": "gene"
+        },
+        "seq::DEF": {
+            "file": "data\\sequence\\DEF.seq",
+            "name": "DEF",
+            "metadata": "data\\sequence\\DEF.metadata",
+            "type": "gene"
         }
     },
     "alignment_list": {
@@ -50,7 +62,8 @@
                 "seq::EcoliccmE"
             ],
             "data": "data\\alignment\\EcoliccmC.EcoliccmE.ali.dat",
-            "algorithm": "ComparatorList::needleman-wunsch"
+            "algorithm": "ComparatorList::needleman-wunsch",
+            "matrix": "MatrixList::BLAST"
         },
         "ali::EcoliccmC-HsapiensSCO2": {
             "file": "data\\alignment\\EcoliccmC.HsapiensSCO2.ali",
@@ -59,7 +72,8 @@
                 "seq::HsapiensSCO2"
             ],
             "data": "data\\alignment\\EcoliccmC.HsapiensSCO2.ali.dat",
-            "algorithm": "ComparatorList::needleman-wunsch"
+            "algorithm": "ComparatorList::needleman-wunsch",
+            "matrix": "MatrixList::BLAST"
         },
         "ali::EcoliccmE-HsapiensSCO2": {
             "file": "data\\alignment\\EcoliccmE.HsapiensSCO2.ali",
@@ -68,7 +82,18 @@
                 "seq::HsapiensSCO2"
             ],
             "data": "data\\alignment\\EcoliccmE.HsapiensSCO2.ali.dat",
-            "algorithm": "ComparatorList::needleman-wunsch"
+            "algorithm": "ComparatorList::needleman-wunsch",
+            "matrix": "MatrixList::BLAST"
+        },
+        "ali::EcoliccmE-EcoliccmC": {
+            "file": "data\\alignment\\EcoliccmE.EcoliccmC.ali",
+            "opposing": [
+                "seq::EcoliccmE",
+                "seq::EcoliccmC"
+            ],
+            "data": "data\\alignment\\EcoliccmE.EcoliccmC.ali.dat",
+            "algorithm": "ComparatorList::needleman-wunsch",
+            "matrix": "MatrixList::transition-transversion"
         }
     },
     "tree_list": {
@@ -79,8 +104,25 @@
                 "seq::EcoliccmE",
                 "seq::HsapiensSCO2"
             ],
-            "algorithm": "TreePlanterList::UPGMA",
-            "processor": "ProcessorList::needleman-wunsch"
+            "algorithm": "TreePlanterList::UPGMA"
+        },
+        "tree::DEF-ABC-HsapiensSCO2": {
+            "file": "data\\tree\\DEF.ABC.HsapiensSCO2.tree",
+            "opposing": [
+                "seq::DEF",
+                "seq::ABC",
+                "seq::HsapiensSCO2"
+            ],
+            "algorithm": "TreePlanterList::UPGMA"
+        },
+        "tree::DEF-HsapiensSCO2-EcoliccmC": {
+            "file": "data\\tree\\DEF.HsapiensSCO2.EcoliccmC.tree",
+            "opposing": [
+                "seq::DEF",
+                "seq::HsapiensSCO2",
+                "seq::EcoliccmC"
+            ],
+            "algorithm": "TreePlanterList::UPGMA"
         }
     },
     "sketch_list": {
