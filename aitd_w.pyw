@@ -138,7 +138,10 @@ symbolunchecked = ImageTk.PhotoImage(
 symbolchecked = ImageTk.PhotoImage(
     Image.open(
         os.path.join(
-            programdict, "data", "icons", "MaterialSymbolsLightCheckBoxOutlineRounded.png"
+            programdict,
+            "data",
+            "icons",
+            "MaterialSymbolsLightCheckBoxOutlineRounded.png",
         )
     ).resize((20, 20))
 )
@@ -147,7 +150,12 @@ with open(os.path.join(programdict, "data", "setting.dat"), "rb") as f:
     try:
         config = pickle.load(f)
     except EOFError:
-        config = {"language": "en"}
+        config = {
+            "language": "en",
+            "defaultComparator": "ComparatorList::needleman-wunsch",
+            "defaultMatrix": "MatrixList::transition-transversion",
+            "defaultGap": -2,
+        }
         with open(os.path.join(programdict, "data", "setting.dat"), "wb") as f:
             pickle.dump(config, f)
 
@@ -155,6 +163,9 @@ with open(os.path.join(programdict, "data", "en.yml"), "r", encoding="utf-8") as
     endata = yaml.safe_load(f.read())
 
 langdata = endata
+defaultComparator = config["defaultComparator"]
+defaultMatrix = config["defaultMatrix"]
+defaultGap = config["defaultGap"]
 
 
 def getlang(word):
@@ -665,6 +676,7 @@ def importseq():
     global mainf
     global ismainfat
     global treefile
+    global nowsthopen
     global impseq
     global projectpath
     global pjset
@@ -688,6 +700,7 @@ def importseq():
         global treefile
         global impseq
         global getnumrer
+        global nowsthopen
         global projectpath
         global mainf
         global pjset
@@ -729,6 +742,7 @@ def importseq():
             global namespaces
             global treefile
             global projectpath
+            global nowsthopen
             global impseq
             global mainf
             global pjset
@@ -765,6 +779,7 @@ def importseq():
                     json.dump(pjset, f)
             for i in mainf.winfo_children():
                 i.destroy()
+            nowsthopen = ""
 
         for i in range(len(lstlst)):
             previewframe = Frame(previewnote, bg="white")
@@ -854,6 +869,7 @@ def makealign():
     global pjset
     global mainf
     global projectpath
+    global nowsthopen
     global comprr
     global namespaces
     openframe = Frame(mainf, bg="white")
@@ -880,6 +896,7 @@ def makealign():
         global pjset
         global mainf
         global maxsv
+        global nowsthopen
         global namespaces
         global comprr
         global projectpath
@@ -945,6 +962,7 @@ def makealign():
         messagebox.showinfo("AITD System", getlang("alisuc"))
         for i in mainf.winfo_children():
             i.destroy()
+        nowsthopen = ""
         # waitinglabel = Label(root, text=getlang("plswat"), fg="black", bg="white")
         # waitinglabel.place(relx=0, rely=0, relwidth=1, relheight=1)
         # waitinglabel.config(alpha=0.5)
@@ -1005,9 +1023,18 @@ def makealign():
 
 def maketree():
     global mainf
+    global namespaces
+    global nowsthopen
     global pjset
     global symbolchecked
     global symbolunchecked
+
+    clblf = Frame(mainf, bg="white")
+
+    clbl = Label(clblf, text=getlang("clbl"), bg="white")
+    clbl.place(x=5)
+
+    clblf.place(relwidth=1, relheight=0.05, relx=0, rely=0)
 
     colmainf = Frame(mainf)
     treetfile = ttk.Treeview(colmainf)
@@ -1024,23 +1051,23 @@ def maketree():
     # treetfile.heading(text=getlang("treetfileseq"))
     # treetfile.heading("abstract",text=getlang("treetfileab"))
 
-    treetfile.tag_configure('checked', image=symbolchecked)
-    treetfile.tag_configure('unchecked', image=symbolunchecked)
+    treetfile.tag_configure("checked", image=symbolchecked)
+    treetfile.tag_configure("unchecked", image=symbolunchecked)
 
     def on_checkbox_changed(*args):
         item_id = treetfile.focus()
         checkbox_state = treetfile.item(item_id, "tag")
-        if checkbox_state[0] == 'checked':
-            treetfile.item(item_id, tags=('unchecked',))
+        if checkbox_state[0] == "checked":
+            treetfile.item(item_id, tags=("unchecked",))
         else:
-            treetfile.item(item_id, tags=('checked',))
+            treetfile.item(item_id, tags=("checked",))
 
     seqs, rs = [], 0
     for i in pjset["sequence_list"]:
         # with open(os.path.join(projectpath, pjset["sequence_list"][i]["file"])) as f:
         #     kseq = f.read()
-        seqs.append(treetfile.insert('',0,text=i,values=i))
-        treetfile.item(seqs[rs], tags=('unchecked',))
+        seqs.append(treetfile.insert("", 0, text=i, values=i))
+        treetfile.item(seqs[rs], tags=("unchecked",))
         rs += 1
 
     # print(seqs)
@@ -1048,7 +1075,159 @@ def maketree():
 
     treetfile.pack(fill=BOTH, expand=1)
 
-    colmainf.place(relwidth=1,relheight=0.5,relx=0,rely=0)
+    colmainf.place(relwidth=1, relheight=0.5, relx=0, rely=0.05)
+
+    rcnxtf = Frame(mainf, bg="white")
+
+    runins = [getlang("autoalign")]  # , getlang("saveautoalign")]
+
+    global boxes
+    boxes = []
+    for i in range(len(runins)):
+        boxes.append(BooleanVar())
+        # boxes[i].set(True)
+        cbt = Checkbutton(
+            rcnxtf,
+            text=runins[i],
+            variable=boxes[i],
+            bg="white",
+            onvalue=True,
+            offvalue=False,
+        )
+        cbt.grid(column=0, row=i, sticky=W)
+        boxes[i].set(True)
+        print(boxes[i].get())
+
+    rcnxtf.place(relwidth=1, relheight=0.1, relx=0, rely=0.55)
+
+    algorf = Frame(mainf, bg="white")
+
+    Label(algorf, text=getlang("planter"), bg="white").place(x=5, y=0)
+
+    aaligncholl = []
+    for i in aitd.xerlist.TreePlanterList.__dict__:
+        if len(i.split("::")) > 1:
+            aaligncholl.append(i)
+
+    global aseq1sv
+    aseq1sv = StringVar()
+    aseq1cb = ttk.Combobox(algorf, state="readonly", textvariable=aseq1sv)
+    aseq1cb["values"] = tuple(aaligncholl)
+    aseq1cb.current(0)
+    aseq1cb.place(relx=0.2, y=0, relwidth=0.55)
+
+    algorf.place(relwidth=1, relheight=0.05, relx=0, rely=0.65)
+
+    def submittree(*args):
+        global aseq1sv
+        global pjset
+        global nowsthopen
+        global boxes
+        global namespaces
+        # for i in boxes:
+        #     print(i.get())
+        needmake = []
+        for i in treetfile.get_children():
+            if treetfile.item(i, "tag") == ("checked",):
+                needmake.append(treetfile.item(i, "value")[0])
+        ctneedmake = []
+        for i in needmake:
+            seqe = aitd.Sequence()
+            with open(os.path.join(projectpath, namespaces[i]["file"]), "r") as f:
+                seqe.sequence = f.read()
+            with open(os.path.join(projectpath, namespaces[i]["metadata"]), "r") as f:
+                seqe.metadata = f.read()
+            seqe.type = namespaces[i]["type"]
+            seqe.name = i
+            ctneedmake.append(seqe)
+        if len(needmake) < 3:
+            messagebox.showwarning("AITD System", getlang("needmorethanthree"))
+            return
+        distances = [([0] * len(needmake)) for i in range(len(needmake))]
+        for i in range(len(needmake) - 1):
+            for j in range(i + 1, len(needmake)):
+                seqreln1, seqreln2 = (
+                    needmake[i].split("::")[1],
+                    needmake[j].split("::")[1],
+                )
+                if ("ali::%s-%s" % (seqreln1, seqreln2) in namespaces) or (
+                    "ali::%s-%s" % (seqreln2, seqreln1) in namespaces
+                ):
+                    try:
+                        with open(
+                            os.path.join(
+                                projectpath,
+                                namespaces["ali::%s-%s" % (seqreln1, seqreln2)]["data"],
+                            ),
+                            "r",
+                        ) as f:
+                            distances[i][j] = distances[j][i] = int(
+                                f.read().splitlines()[1]
+                            )
+                    except Exception:
+                        with open(
+                            os.path.join(
+                                projectpath,
+                                namespaces["ali::%s-%s" % (seqreln2, seqreln1)]["data"],
+                            ),
+                            "r",
+                        ) as f:
+                            distances[i][j] = distances[j][i] = int(
+                                f.read().splitlines()[1]
+                            )
+                elif not boxes[0].get():
+                    messagebox.showwarning("AITD System", getlang("noali"))
+                    return
+                else:
+                    with open(
+                        os.path.join(projectpath, namespaces[needmake[i]]["file"]), "r"
+                    ) as f:
+                        seq1d = f.read()
+                    with open(
+                        os.path.join(projectpath, namespaces[needmake[j]]["file"]), "r"
+                    ) as f:
+                        seq2d = f.read()
+                    aliadata = getattr(aitd.xerlist.ComparatorList, defaultComparator)(
+                        seq1d,
+                        seq2d,
+                        getattr(aitd.xerlist.MatrixList, defaultMatrix),
+                        defaultGap,
+                    )
+                    distances[i][j] = distances[j][i] = aliadata[2]
+        # print(distances)
+        treedata = getattr(aitd.xerlist.TreePlanterList, aseq1sv.get())(
+            ctneedmake, distances
+        )
+        rccname = qccname = ""
+        for i in ctneedmake:
+            rccname = rccname + i.name.split("::")[1] + "-"
+            qccname = qccname + i.name.split("::")[1] + "."
+        rccname = rccname[:-1]
+        qccname = qccname[:-1]
+        treefilepath = os.path.join("data", "tree", qccname + ".tree")
+        with open(os.path.join(projectpath,treefilepath), "wb") as f:
+            pickle.dump(treedata, f)
+        godata = {
+            "file": treefilepath,
+            "opposing": needmake,
+            "algorithm": aseq1sv.get(),
+        }
+        namespaces["tree::" + rccname] = godata
+        pjset["tree_list"]["tree::" + rccname] = godata
+        with open(os.path.join(projectpath, "setting.json"), "w") as f:
+            json.dump(pjset, f)
+        messagebox.showinfo("AITD System", getlang("successmake"))
+        for i in mainf.winfo_children():
+            i.destroy()
+        nowsthopen = ""
+        # print(treedata)
+
+    buttf = Frame(mainf, bg="white")
+
+    buttt = ttk.Button(buttf, text=getlang("submittree"), command=submittree)
+    buttt.place(relx=0.8)
+
+    buttf.place(relwidth=1, relheight=0.1, relx=0, rely=0.7)
 
 
 def selection(*args, item=False):
@@ -1274,8 +1453,6 @@ def openpj(*args, pp=""):
             text=i.split("::")[-1]
             + " -> "
             + pjset["tree_list"][i]["algorithm"]
-            + " & "
-            + pjset["tree_list"][i]["processor"],
         )
 
     for i in pjset["sketch_list"]:
@@ -1353,7 +1530,13 @@ limitations under the License.""",
         font=("思源黑体 Normal", 8),
         justify="left",
     ).pack()
-    Label(aboutpage,text="To see licenses for other works used in this project, please check .\\licenses\\ !",font=("思源黑体 Normal", 8),bg="white",fg="red").pack()
+    Label(
+        aboutpage,
+        text="To see licenses for other works used in this project, please check .\\licenses\\ !",
+        font=("思源黑体 Normal", 8),
+        bg="white",
+        fg="red",
+    ).pack()
 
 
 menu = tkinter.Menu(root)
