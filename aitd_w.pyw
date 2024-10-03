@@ -251,7 +251,25 @@ treefile.pack(fill=BOTH, expand=1)
 def displaytree(data, opened):
     with open(os.path.join(projectpath, data["file"]), "rb") as f:
         treedata = pickle.load(f)
-    # print(treedata)
+    elbl = Label(mainf,text=getlang("elbl"),bg="white")
+    elbl.place(x=5,y=5)
+    rtll = Text(mainf,bg="white")
+    rtll.place(y=35,relwidth=1,relheight=0.4)
+    rtll.insert(END, str(treedata))
+    rtll.config(state=DISABLED)
+    secuffr = Frame(mainf, bg="white")
+    lbee1 = Text(secuffr)
+    lbee1.pack(fill=BOTH, expand=1)
+    lbee1.insert(END, "CODE: %s ; OPPOSING: " % opened)
+    for i in data["opposing"]:
+        lbee1.insert(END, i + ", ")
+    lbee1.insert(
+        END,
+        "; ALGORITHM: %s ." % (data["algorithm"]),
+    )
+    lbee1.config(state=DISABLED)
+    secuffr.place(relheight=0.08, relwidth=1, relx=0, rely=0.9)
+    root.update()
 
 
 def displaysktch(data, opened):
