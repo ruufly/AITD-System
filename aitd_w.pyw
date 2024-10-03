@@ -1709,6 +1709,6 @@ root.bind("<Control-h>", abouabout)
 # root.bind("<Control-Shift-s>",copypj)
 # root.bind("<Control-Shift-o>",lambda *args: selection(*args, item="pict"))
 
-openpj(pp="C:\\Users\\87023\\OneDrive\\科创大赛\\AITD System\\test")
+# openpj(pp="C:\\Users\\87023\\OneDrive\\科创大赛\\AITD System\\test")
 
 root.mainloop()
