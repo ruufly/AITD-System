@@ -16,8 +16,11 @@ programdict = os.path.dirname(os.path.abspath(__file__))
 ####################
 # 以下为所需的接口
 
+def treeModel():
+    pass
+
 def getName(name):  # 获得程序生成的唯一名称
-    return
+    pass
 
 SpeciesList = [...] # 用于存储已经创建的物种
 SeqMap = {"":[...]} # 用于将序列和物种一一对应
@@ -29,13 +32,13 @@ def saveSetting(projectDict):
             for seq in SeqMap[species]:
                 settingData["sequence_list"]["seq::" + seq] = species
                 
-def getNamespace(namespace):
-    return
+def getNamespace(namespace): # 用于获取命名空间名所在位置
+    pass
 
 def getObject(str):
     with open(programdict + "setting.json") as js:
         contents = json.read(js)
-
+        
 #endif  // 乱入
 
 helps = """
@@ -85,7 +88,7 @@ def Note(message):
     print(Fore.CYAN + "[Note] %s" % message + Style.RESET_ALL)
 
 
-def Renote(message, end):
+def reNote(message, end):
     print("       %s" % message, end=end)
 
 
@@ -98,33 +101,33 @@ with open(os.path.join(programdict, "data", "setting.dat"), "rb") as f:
             pickle.dump(config, f)
 
 with open(os.path.join(programdict, "data", "en.yml"), "r", encoding="utf-8") as f:
-    endata = yaml.safe_load(f.read())
+    EnData = yaml.safe_load(f.read())
 
-langdata = endata
+langData = EnData
 
 
-def getword(word):
-    if word in langdata:
-        return langdata[word]
-    elif word in endata:
-        return endata[word]
+def getWord(word):
+    if word in langData:
+        return langData[word]
+    elif word in EnData:
+        return EnData[word]
     else:
         Fatal("Unable to find corresponding language information: %s" % word)
         exit(-1)
 
 
 def refresh_setting():
-    global langdata
+    global langData
     try:
         with open(
             os.path.join(programdict, "data", "%s.yml" % config["language"]),
             "r",
             encoding="utf-8",
         ) as f:
-            langdata = yaml.safe_load(f.read())
+            langData = yaml.safe_load(f.read())
     except Exception as e:
         Fatal("Unable to load language file: %s.yml" % (config["language"]))
-        langdata = endata
+        langData = EnData
         return False
     return True
 
@@ -133,26 +136,26 @@ refresh_setting()
 
 
 def mkdir(path):
-    Renote("%s %s..." % (getword("createdict"), path), end=" ")
+    reNote("%s %s..." % (getWord("createdict"), path), end=" ")
     try:
         os.makedirs(path)
         print("done.")
         return True
     except Exception:
         print()
-        Error("%s : %s" % (getword("dictnotcreate"), path))
+        Error("%s : %s" % (getWord("dictnotcreate"), path))
         return False
 
 
 def mkfile(filename, mode="w"):
-    Renote("%s %s..." % (getword("createfile"), filename), end=" ")
+    reNote("%s %s..." % (getWord("createfile"), filename), end=" ")
     try:
         open(filename, "w").close()
-        print(getword("done"))
+        print(getWord("done"))
         return True
     except Exception:
         print()
-        Error("%s : %s" % (getword("filenotcreate"), filename))
+        Error("%s : %s" % (getWord("filenotcreate"), filename))
         return False
 
 
@@ -182,24 +185,24 @@ while True:
         os.system("cls")
     elif command[0] == "setting":
         if len(command) < 3:
-            Error(getword("synerr"))
-            Note("%s : setting <option> <value>" % getword("usage"))
+            Error(getWord("synerr"))
+            Note("%s : setting <option> <value>" % getWord("usage"))
             continue
         if command[1] == "language":
             config["language"] = command[2]
             with open("data/setting.dat", "wb") as f:
                 pickle.dump(config, f)
             if refresh_setting():
-                Note("%s %s" % (getword("langset"), config["language"]))
+                Note("%s %s" % (getWord("langset"), config["language"]))
         else:
-            Error(getword("notsetting"))
+            Error(getWord("notsetting"))
     elif command[0] == "new":
         if len(command) < 3:
-            Error(getword("synerr"))
-            Note("%s : new <type> <name> [<parameter>]" % getword("usage"))
+            Error(getWord("synerr"))
+            Note("%s : new <type> <name> [<parameter>]" % getWord("usage"))
             continue
         if command[1] == "project":
-            Note(getword("mkpj"))
+            Note(getWord("mkpj"))
             mkdir(command[2])
             mkdir(os.path.join(command[2], "input"))
             mkdir(os.path.join(command[2], "plugins"))
@@ -218,10 +221,10 @@ while True:
             with open(os.path.join(command[2], "setting.json"), "w") as f:
                 json.dump({}, f)
             mkfile(os.path.join(command[2], "setting.dat"))
-            Note(getword("pjcreated"))
+            Note(getWord("pjcreated"))
         else:
-            Error(getword("synerr"))
-            Note("%s : new <type> <name> [<parameter>]" % getword("usage"))
+            Error(getWord("synerr"))
+            Note("%s : new <type> <name> [<parameter>]" % getWord("usage"))
             continue
     elif command[0] == "open":
         if len(command) == 2:
@@ -229,7 +232,7 @@ while True:
                 os.chdir(os.path.join(os.getcwd(), command[1]))
                 nowProject = command[1]
             except FileNotFoundError:
-                Error(getword("notpjdict"))
+                Error(getWord("notpjdict"))
                 nowProject = ""
                 continue
         else:
@@ -237,15 +240,15 @@ while True:
         # try:
         #     nowProject = command[1]
         # except IndexError:
-        #     Error(getword("synerr"))
-        #     Note("%s : open <name>" % getword("usage"))
+        #     Error(getWord("synerr"))
+        #     Note("%s : open <name>" % getWord("usage"))
         #     continue
         try:
             with open(os.path.join("setting.json"), "r") as f:
                 if json.load(f) == {}:
-                    Warning(getword("warnbasic"))
+                    Warning(getWord("warnbasic"))
         except Exception:
-            Error(getword("wpj"))
+            Error(getWord("wpj"))
             nowProject = ""
             continue
     elif command[0] == "debug":
@@ -254,16 +257,16 @@ while True:
         elif command[1] == "off":
             debug = False
         else:
-            Error(getword("synerr"))
-            Note("%s : debug [on|off]" % getword("usage"))
+            Error(getWord("synerr"))
+            Note("%s : debug [on|off]" % getWord("usage"))
             continue
     elif command[0] == "exit":
         if nowProject != "":
-            Note(getword("exitpj"))
+            Note(getWord("exitpj"))
             os.chdir(os.path.join(os.getcwd(), ".."))
             nowProject = ""
         else:
-            Note(getword("exit"))
+            Note(getWord("exit"))
             print(
             """
 +-----------------------------------------------------------------+
@@ -331,21 +334,30 @@ while True:
                     aitd.readFile(files[0], DefaultParser, seqs)
                     
                     for seq in seqs:
-                        with open(programdict + name + ".seq",'a') as f:
-                            f.write(seq.sequence)
-                        with open(programdict + name + ".metadata",'a') as f:
-                            f.write(seq.metadata)
+                        if os.path.exists(os.path.join(programdict, "data", "sequence", name + ".seq")):
+                            with open(programdict + name + ".seq", 'w') as f:
+                                f.write(seq.sequence)
+                        else:
+                            with open(programdict + name + ".seq", 'x') as f:
+                                f.write(seq.sequence)
+                                
+                        if os.path.exists(os.path.join(programdict, "data", "sequence", name + ".metadata")):
+                            with open(programdict + name + ".metadata", 'w') as f:
+                                f.write(seq.metadata)
+                        else:
+                            with open(programdict + name + ".seq", 'x') as f:
+                                f.write(seq.sequence)
                 else:
-                    Error(getword("synerr"))
-                    Note("%s : import <name> <file> [<parser>]" % getword("usage"))
+                    Error(getWord("synerr"))
+                    Note("%s : import <name> <file> [<parser>]" % getWord("usage"))
             elif command[0] == "species":
                 fullCommand = oriInput.split("\"")
                 if len(fullCommand) == 2:
                     speciesName = getName(fullCommand[1])
                     SpeciesList.extend(speciesName)
                 else:
-                    Error(getword("synerr"))
-                    Note("%s : species <name>" % getword("usage"))
+                    Error(getWord("synerr"))
+                    Note("%s : species <name>" % getWord("usage"))
             elif command[0] == "add":
                 if len(command) == 3:
                     if command[1] in SeqMap.keys():
@@ -354,12 +366,12 @@ while True:
                         SeqMap[command[1]] = [...]
                         SeqMap[command[1]].extend(command[2])
                 else:
-                    Error(getword("synerr"))
-                    Note("%s : add <species> <name>" % getword("usage"))
+                    Error(getWord("synerr"))
+                    Note("%s : add <species> <name>" % getWord("usage"))
             elif command[0] == "del":
                 if len(command) == 2:
                     while True:
-                        c = input(getword("confirmSpeciesDel"))
+                        c = input(getWord("confirmSpeciesDel"))
                         if c == 'y':
                             del SeqMap[command[1]]
                             break
@@ -367,7 +379,7 @@ while True:
                             break
                 if len(command) == 3:
                     while True:
-                        c = input(getword("confirmSeqDel"))
+                        c = input(getWord("confirmSeqDel"))
                         if c == 'y':
                             del SeqMap[command[1]][c]
                             break
@@ -377,7 +389,7 @@ while True:
                 if command[1] == "get" and len(command) == 4:
                     with open(programdict + "setting.json") as js:
                         output = ""
-                        dicts = js.read()
+                        dicts = json.load(js.read())
                         if command[2].split("::")[0] == "seq":
                             output = dicts["sequence_list"][command[2]][command[3]]
                         elif command[2].split("::")[0] == "ali":
@@ -389,7 +401,7 @@ while True:
                         print(output)
                 elif command[1] == "set" and len(command) == 5:
                     with open(programdict + "setting.json") as js:
-                        dicts = js.read()
+                        dicts = json.load(js.read())
                         if command[2].split("::")[0] == "seq":
                             dicts["sequence_list"][command[2]][command[3]] = command[4]
                         elif command[2].split("::")[0] == "ali":
@@ -398,46 +410,175 @@ while True:
                             dicts["tree_list"][command[2]][command[3]] = command[4]
                         elif command[2].split("::")[0] == "sktch":
                             dicts["sketch_list"][command[2]][command[3]] = command[4]
+                            
+                        json.dump(dicts, js)
                 else:
-                    Error(getword("synerr"))
-                    Note("%s : parameter set <object> <key> <value>" % getword("usage"))
-                    Note("%s : parameter get <object> <key>" % getword("usage"))
+                    Error(getWord("synerr"))
+                    Note("%s : parameter set <object> <key> <value>" % getWord("usage"))
+                    Note("%s : parameter get <object> <key>" % getWord("usage"))
             elif command[0] == "align":
                 if command[1] == "seq":
-                    defaultComparator = getattr(aitd.xerlist.ComparatorList, "needleman-wunsch")
+                    defaultComparator = "ComparatorList::needleman-wunsch"
                     defaultMatrix = "God know what it is"
                     
-                    if len(command) == 5:
-                        if command[4].split("=")[0] == "comparator" and command[5].split("=")[0] == "matrix":
-                            # comparator
-                            cmp = command[4].split("=")[1]
-                            namespace = getNamespace(cmp.split("::")[0])
-                            fun = cmp.split("::")[1]
-                            defaultComparator = getattr(namespace, fun)
-                            
-                            # matrix
-                            cmp = command[5].split("=")[1]
-                            namespace = getNamespace(cmp.split("::")[0])
-                            mat = cmp.split("::")[1]
-                            defaultMatrix = getattr(namespace, mat)
-                    if len(command) == 4:
-                        if command[4].split("=")[0] == "comparator":
-                            cmp = command[4].split("=")[1]
-                            namespace = getNamespace(cmp.split("::")[0])
-                            fun = cmp.split("::")[1]
-                            defaultComparator = getattr(namespace, fun)
-                            
+                    if len(command) > 4:
+                        for i in range(4, len(command) + 1):
+                            if command[i].split("=")[0] == "comparator":
+                                # comparator
+                                cmp = command[i].split("=")[1]
+                                defaultComparator = cmp
+                            elif command[i].split("=")[0] == "matrix":
+                                # matrix
+                                mat = command[5].split("=")[1]
+                                namespace = getNamespace(cmp.split("::")[0])
+                                defaultMatrix = getattr(namespace, mat)
+                    
                     print("align seq1 and seq2 with cmp and mat")
                     
-                    
+                    with open(os.path.join(programdict, "setting.json"), "r") as js:
+                        strSeq1 = command[2].split("::")[1]
+                        strSeq2 = command[3].split("::")[1]
+                        data = json.load(js.read())
+                        file1 = data["sequence_list"][command[2]]["file"]
+                        file2 = data["sequence_list"][command[3]]["file"]
+                        seq1 = seq2 = ""
+                        with open(file1, "r") as f:
+                            seq1 = f.read()
+                        with open(file2, "r") as f:
+                            seq2 = f.read()
+                        score, alignment, distant = getattr(getNamespace(defaultComparator.split("::")[0]), defaultComparator)(seq1, seq2, defaultMatrix)
+                        if os.path.exists(os.path.join(programdict, "data", "alignment", command[2] + "." + command[3] + ".ali")):
+                            with open(os.path.join(programdict, "data", "alignment", command[2] + "." + command[3] + ".ali"), 'w') as ali:
+                                ali.write(alignment[0] + "\n")
+                                ali.write(alignment[1])
+                        else:
+                            with open(os.path.join(programdict, "data", "alignment", command[2] + "." + command[3] + ".ali"), 'x') as ali:
+                                ali.write(alignment[0] + "\n")
+                                ali.write(alignment[1])
+                                
+                        if os.path.exists(os.path.join(programdict, "data", "alignment", command[2] + "." + command[3] + ".ali.dat")):
+                            with open(os.path.join(programdict, "data", "alignment", command[2] + "." + command[3] + ".ali.dat"), 'w') as ali:
+                                ali.write(score + "\n" + distant)
+                        else:
+                            with open(os.path.join(programdict, "data", "alignment", command[2] + "." + command[3] + ".ali.dat"), 'x') as ali:
+                                ali.write(score + "\n" + distant)
+                        data["alignment_list"][command[2] + "." + command[3]] = {
+                            "file": repr(os.path.join("data","alignment",strSeq1 + "." + strSeq2 + ".ali")),
+                            "opposing": [
+                                command[2],command[3]
+                                ],
+                            "data": repr(os.path.join("data", "alignment", strSeq1 + "." + strSeq2 + ".ali.dat")),
+                            "algorithm": defaultComparator
+                        }
+
+
                 elif command[1] == "species":
-                    a=a
+                    pass
                     # To be continued...
+                    
+            elif command[0] == "tree":
+                try:
+                    n = int(command[1])
+                    
+                    if len(command) > n + 1:
+                        defaultPlanter = getattr(aitd.xerlist.TreePlanterList, "TreePlanterList::UPGMA")
+                        defaultComparator = getattr(aitd.xerlist.ComparatorList, "ComparatorList::needleman-wunsch")
+                        defaultMatrix = "God it"
+                        isSave = True
+                        if len(command) > n + 2:
+                            for i in range(n + 2, len(command) + 1):
+                                if command[i].split("=")[0] == "planter":
+                                    planter = command[i].split("=")[1]
+                                    namespace = planter.split("::")[0]
+                                    defaultPlanter = getattr(getNamespace(namespace), planter)
+                                elif command[i].split("=")[0] == "comparator":
+                                    cmp = command[i].split("=")[1]
+                                    namespace = getNamespace(cmp.split("::")[0])
+                                    defaultComparator = getattr(namespace, cmp)
+                                elif command[i].split("=")[0] == "matrix":
+                                    mat = command[5].split("=")[1]
+                                    namespace = getNamespace(cmp.split("::")[0])
+                                    defaultMatrix = getattr(namespace, mat)
+                                elif command[i].split("=")[0] == "savealign":
+                                    isSave = (command[i].split("=")[1].lower() == "true")
+                                    
+                        sequenceList = [aitd.Sequence("", "", "")]
+                        disMatrix = [[...],...]
+                        name = ""
+                        with open(os.path.join(programdict, "setting.json")) as js:
+                            data = json.load(js.read())
+                            for i in range(2, n + 2):
+                                seqFile = data["sequence_list"][command[i]]["file"]
+                                name += command[i] + "."
+                                with open(seqFile,'r') as file:
+                                    sequenceList.append(aitd.Sequence("gene", command[i], file.read()))
+                                for j in range(i, n + 2):
+                                    file1 = data["sequence_list"][command[i]]["file"]
+                                    file2 = data["sequence_list"][command[j]]["file"]
+                                    seq1 = seq2 = ""
+                                    
+                                    with open(file1, 'r') as file:
+                                        seq1 = file.read()
+                                    with open(file2, 'r') as file:
+                                        seq2 = file.read()
+                                        
+                                    score, alignment, distant = defaultComparator(seq1, seq2, defaultMatrix)
+                                    disMatrix[i - 1][j - 1] = distant
+                                    if isSave:
+                                        if os.path.exists(os.path.join(programdict, "data", "alignment", command[2] + "." + command[3] + ".ali")):
+                                            with open(os.path.join(programdict, "data", "alignment", command[2] + "." + command[3] + ".ali"), 'w') as ali:
+                                                ali.write(alignment[0] + "\n")
+                                                ali.write(alignment[1])
+                                        else:
+                                            with open(os.path.join(programdict, "data", "alignment", command[2] + "." + command[3] + ".ali"), 'x') as ali:
+                                                ali.write(alignment[0] + "\n")
+                                                ali.write(alignment[1])
+                                                
+                                        if os.path.exists(os.path.join(programdict, "data", "alignment", command[2] + "." + command[3] + ".ali.dat")):
+                                            with open(os.path.join(programdict, "data", "alignment", command[2] + "." + command[3] + ".ali.dat"), 'w') as ali:
+                                                ali.write(score + "\n" + distant)
+                                        else:
+                                            with open(os.path.join(programdict, "data", "alignment", command[2] + "." + command[3] + ".ali.dat"), 'x') as ali:
+                                                ali.write(score + "\n" + distant)
+                                        data["alignment_list"][command[2] + "." + command[3]] = {
+                                            "file": repr(os.path.join("data","alignment",strSeq1 + "." + strSeq2 + ".ali")),
+                                            "opposing": [
+                                                command[2],command[3]
+                                                ],
+                                            "data": repr(os.path.join("data", "alignment", strSeq1 + "." + strSeq2 + ".ali.dat")),
+                                            "algorithm": defaultComparator
+                                        }
+
+                            lis1, lis2 = aitd.UPGMA(sequenceList, disMatrix)
+                            with open(os.path.join(programdict, "data", "tree", name + "tree"), 'wb') as file:
+                                pickle.dump((lis1,lis2), file)
+                except:
+                    Error(getWord("synerr"))
+                    Note("%s : tree <seqNum> <seq1> <seq2> <seq3>... [<parameter>]" % getWord("usage"))
+                
+            elif command[0] == "correct":
+                try:
+                    namespace = getNamespace(command[1].split("::")[0])
+                    model = getattr(namespace, command[1])
+                    n = int(command[3])
+                    pass
+                except:
+                    pass
+                
+            elif command[0] == "list":
+                with open(os.path.join(programdict, "setting.json"), 'r') as js:
+                    data = json.load(js.read())
+                    if command[1] == "seq":
+                        for key, val in data["sequence_list"].items():
+                            print(key, end=": ")
+                            print(val["name"])
+                    elif command[1] == "ali":
+                        pass
 
             ################################################################
             # HERE!!!!!!!!                                                 #
             ################################################################
             continue
-        Error(getword("invcmd"))
+        Error(getWord("invcmd"))
         continue
 
