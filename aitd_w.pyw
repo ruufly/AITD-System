@@ -30,6 +30,7 @@ import aitd
 import shutil
 import pyglet
 import numpy as np
+import time
 
 # from copy import deepcopy
 import matplotlib.pyplot as plt
@@ -258,7 +259,11 @@ def displaysktch(data, opened):
     global sktchphoto
     global ismainfat
     ismainfat = False
-    sktchphoto = ImageTk.PhotoImage(Image.open(os.path.join(projectpath, data["file"])))
+    try:
+        sktchphoto = ImageTk.PhotoImage(Image.open(os.path.join(projectpath, data["file"])))
+    except OSError as e:
+        messagebox.showerror("AITD System", e)
+        return
     showskch = Label(mainf, image=sktchphoto, bg="linen")
     showskch.place(relheight=0.8, relwidth=1, relx=0, rely=0)
 
@@ -1205,7 +1210,7 @@ def maketree():
         rccname = rccname[:-1]
         qccname = qccname[:-1]
         treefilepath = os.path.join("data", "tree", qccname + ".tree")
-        with open(os.path.join(projectpath,treefilepath), "wb") as f:
+        with open(os.path.join(projectpath, treefilepath), "wb") as f:
             pickle.dump(treedata, f)
         godata = {
             "file": treefilepath,
@@ -1217,6 +1222,17 @@ def maketree():
         with open(os.path.join(projectpath, "setting.json"), "w") as f:
             json.dump(pjset, f)
         messagebox.showinfo("AITD System", getlang("successmake"))
+        try:
+            treefile.insert(
+                treestree,
+                1,
+                "tree::" + rccname,
+                text=rccname
+                + " -> "
+                + pjset["tree_list"]["tree::" + rccname]["algorithm"],
+            )
+        except Exception:
+            pass
         for i in mainf.winfo_children():
             i.destroy()
         nowsthopen = ""
@@ -1228,6 +1244,99 @@ def maketree():
     buttt.place(relx=0.8)
 
     buttf.place(relwidth=1, relheight=0.1, relx=0, rely=0.7)
+
+
+def makesketch():
+    global pjset
+    global namespaces
+    global nowsthopen
+    global mainf
+    openframe = Frame(mainf, bg="white")
+    openframe.place(relheight=0.2, relwidth=1, relx=0, rely=0)
+
+    parserlab = Label(openframe, text=getlang("seltre"), bg="white")
+    parserlab.place(x=5, y=10, relwidth=0.2)
+    global parsercholol
+    global nowparserrer
+    nowparserrer = StringVar()
+    parsercholol = ttk.Combobox(openframe, state="readonly", textvariable=nowparserrer)
+    parserchollll = []
+    for i in pjset["tree_list"]:
+        parserchollll.append(i)
+    parsercholol["values"] = tuple(parserchollll)
+    parsercholol.current(0)
+    parsercholol.place(relx=0.2, y=10, relwidth=0.55)
+
+    parserrlab = Label(openframe, text=getlang("displayer"), bg="white")
+    parserrlab.place(x=5, y=40, relwidth=0.2)
+    global wercholol
+    global nowpaerrrer
+    nowpaerrrer = StringVar()
+    wercholol = ttk.Combobox(openframe, state="readonly", textvariable=nowpaerrrer)
+    erh = []
+    for i in aitd.xerlist.DisplayList.__dict__:
+        if len(i.split("::")) > 1:
+            erh.append(i)
+    wercholol["values"] = tuple(erh)
+    wercholol.current(0)
+    wercholol.place(relx=0.2, y=40, relwidth=0.55)
+
+    rcparserrlab = Label(openframe, text=getlang("typecc"), bg="white")
+    rcparserrlab.place(x=5, y=70, relwidth=0.2)
+    global rcwercholol
+    global rcnowpaerrrer
+    rcnowpaerrrer = StringVar()
+    rcwercholol = ttk.Combobox(openframe, state="readonly", textvariable=rcnowpaerrrer)
+    qerh = [".eps", ".png"]
+    rcwercholol["values"] = tuple(qerh)
+    rcwercholol.current(0)
+    rcwercholol.place(relx=0.2, y=70, relwidth=0.55)
+
+    def goforit(*args):
+        global nowpaerrrer
+        global mainf
+        global nowsthopen
+        global pjset
+        global namespaces
+        global nowparserrer
+        global rcnowpaerrrer
+        reer = nowpaerrrer.get()
+        treee = nowparserrer.get()
+        with open(os.path.join(projectpath, namespaces[treee]["file"]), "rb") as f:
+            treedata = pickle.load(f)
+        spacenamet = str(int(round(time.time() * 1000)))
+        saveasname = os.path.join(
+            "cache", "sketch", spacenamet + rcnowpaerrrer.get()
+        )
+        getattr(aitd.xerlist.DisplayList, reer)(
+            treedata[0],
+            treedata[1],
+            len(namespaces[treee]["opposing"]) + 1,
+            display=False,
+            isSave=True,
+            savePath=os.path.join(projectpath, saveasname),
+        )
+        foitdata = {
+            "file": saveasname,
+            "composition": namespaces[treee]["opposing"],
+            "from": treee,
+            "renderer": reer
+        }
+        namespnam = "sketch::" + spacenamet
+        namespaces[namespnam] = foitdata
+        pjset["sketch_list"][namespnam] = foitdata
+        with open(os.path.join(projectpath, "setting.json"), "w") as f:
+            json.dump(pjset, f)
+        messagebox.showinfo("AITD System", getlang("successmake"))
+        for i in mainf.winfo_children():
+            i.destroy()
+        treefile.insert(treeske, 1, namespnam, text=pjset["sketch_list"][namespnam]["from"] + " @ " + namespnam)
+        nowsthopen = ""
+
+    openbutt = ttk.Button(openframe, text=getlang("startrn"), command=goforit)
+    openbutt.place(relx=0.8, y=70, relwidth=0.15)
+
+    root.update()
 
 
 def selection(*args, item=False):
@@ -1243,8 +1352,8 @@ def selection(*args, item=False):
         except IndexError:
             return
     # print(item)
-    canseb = ["seq", "sktch", "ali", "tree"]
-    cansebb = ["rimpseq", "rcomprr", "rtreestree"]
+    canseb = ["seq", "sketch", "ali", "tree"]
+    cansebb = ["rimpseq", "rcomprr", "rtreestree", "rsketch"]
     if item:
         nowtype = item.split("::")[0]
         if (nowtype in canseb) or (item in cansebb):
@@ -1261,7 +1370,7 @@ def selection(*args, item=False):
         if len(item.split("::")) > 1:
             if nowtype == "seq":
                 displayseq(namespaces[item], item)
-            elif nowtype == "sktch":
+            elif nowtype == "sketch":
                 displaysktch(namespaces[item], item)
             elif nowtype == "ali":
                 displayali(namespaces[item], item)
@@ -1274,6 +1383,8 @@ def selection(*args, item=False):
                 makealign()
             elif item == "rtreestree":
                 maketree()
+            elif item == "rsketch":
+                makesketch()
 
 
 openseqbut = ttk.Button(
@@ -1298,6 +1409,12 @@ gototre = ttk.Button(
     command=lambda *args: selection(*args, item="rtreestree"),
 )
 gototre.place(rely=0.86, relx=0.55, relwidth=0.4)
+gotosre = ttk.Button(
+    sidef,
+    text=getlang("gotosre"),
+    command=lambda *args: selection(*args, item="rsketch"),
+)
+gotosre.place(rely=0.91, relx=0.05, relwidth=0.4)
 
 treefile.bind("<ButtonRelease-1>", selection)
 
@@ -1450,9 +1567,7 @@ def openpj(*args, pp=""):
             treestree,
             1,
             i,
-            text=i.split("::")[-1]
-            + " -> "
-            + pjset["tree_list"][i]["algorithm"]
+            text=i.split("::")[-1] + " -> " + pjset["tree_list"][i]["algorithm"],
         )
 
     for i in pjset["sketch_list"]:
