@@ -568,11 +568,18 @@ while True:
             elif command[0] == "list":
                 with open(os.path.join(programdict, "setting.json"), 'r') as js:
                     data = json.load(js.read())
-                    if command[1] == "seq":
+                    if command[1] == "sequence":
                         for key, val in data["sequence_list"].items():
                             print(key, end=": ")
-                            print(val["name"])
-                    elif command[1] == "ali":
+                            print(val["name"], end = ", ")
+                            print("description: " + val["description"], end = ", ")
+                            print("from: ", val["from"])
+                    elif command[1] == "alignment":
+                        for key, val in data["alignment_list"].items():
+                            print(val["opposing"][0] + " and " + val["opposing"][1], end = " : ")
+                            print("algorithm: ", val["algorithm"], end=", ")
+                            print("file & data", val["file"] + " & ", val["data"])
+                    elif command[1] == "comparator":
                         pass
 
             ################################################################
