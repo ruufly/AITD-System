@@ -46,7 +46,7 @@ notfoundpj: 找不到项目文件夹！
 
 pjsetting: 项目设置文件
 vscsetting: 基础设置
-impseq: 已导入的序列
+impseq: 序列
 impty: (空)
 smpty: (空)
 pmpty: (空)
@@ -81,3 +81,51 @@ transition: 转换
 transversion: 颠换
 inallofpm: 在所有的点突变中
 msuccess: 匹配成功
+
+openwhich: 文件地址
+browse: 浏览
+openseqbut: 打开序列
+plibut: 导入插件
+parserlab: 选择解析器
+openit: 打开
+previewslab: 序列预览
+previewmlab: 元数据预览
+getnumre: 序列数量
+toomany: 序列数量过多
+previewsetset: 序列类型
+previewsetsetlet: 命名空间名
+previewendbut: 提交
+errornamespacename: 命名空间名错误或已存在
+makealib: 比对
+gototre: 建树
+
+seq1la: 序列1
+seq2la: 序列2
+cerla: 比较算法
+maxla: 打分矩阵
+gapla: 空位罚分
+startdo: 开始
+sameseq: 两序列相同
+plswat: 请等待…
+alisuc: 比对成功
+aliexi: 序列比对结果已存在。您要替换它吗？
+
+treetfileseq: 序列名
+treetfileab: 序列摘要
+
+autoalign: 自动比对没有比对数据的序列
+saveautoalign: 保存自动比对数据
+submittree: 提交
+clbl: 选择序列
+needmorethanthree: 选择的序列过少
+noali: 找不到比对数据
+planter: 建树算法
+successmake: 成功
+
+gotosre: 绘制草图
+seltre: 选择一棵树
+displayer: 草图渲染器
+startrn: 开始渲染
+typecc: 文件格式
+
+elbl: 系统发生树数据
