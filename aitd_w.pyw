@@ -51,6 +51,8 @@ root.minsize(int(scx / 2), int(scy / 1.6))
 
 programdict = os.path.dirname(os.path.abspath(__file__))
 
+root.iconbitmap(os.path.join(programdict, "data", "icons", "icon.ico"))
+
 pyglet.font.add_file(
     os.path.join(programdict, "data", "fonts", "SourceHanSansSC-Normal.otf")
 )
@@ -245,16 +247,92 @@ treefile.config(xscrollcommand=vbtfx.set)
 treefile.pack(fill=BOTH, expand=1)
 
 
+class Interaction(object):
+    def __init__(self, plugin_name):
+        self.plugin_name = plugin_name
+
+    def Error(self, message):
+        messagebox.showerror("Error from %s" % self.plugin_name, message)
+
+    def Fatal(self, message):
+        messagebox.showerror("Fatal from %s" % self.plugin_name, message)
+        exit(0)
+
+    def Warn(self, message):
+        messagebox.showwarning("Warning from %s" % self.plugin_name, message)
+
+    def Note(self, message):
+        messagebox.showinfo("Note from %s" % self.plugin_name, message)
+
+
+def getit(name):
+    if type(name) != str:
+        return name
+    else:
+        if name[0] == "@":
+            if type(namespaces[name[1:]]) == str:
+                return '"' + namespaces[name[1:]] + '"'
+            else:
+                return namespaces[name[1:]]
+        elif name[0] == "#":
+            return name[1:]
+        else:
+            return '"' + name + '"'
+
+with open(os.path.join(programdict, "plugins", "plugin_list.json")) as f:
+    lists = json.load(f)
+
+def isPlugin(name):
+    for i in lists:
+        if name == i:
+            return True
+    return False
+
+plugin_list = []
+for plugin in lists:
+    with open(os.path.join(programdict, "plugins", plugin, "setting.json")) as f:
+        zc_data = json.load(f)
+    plugin_list.append(zc_data)
+    for i in zc_data["settings"]:
+        namespaces[i] = zc_data["settings"][i]
+    for i in zc_data["algorithm"]:
+        exec("import plugins.%s.%s" % (plugin, zc_data["algorithm"][i]["file"]))
+        exec(
+            'setattr(aitd.xerlist.%s,"%s",%s)'
+            % (
+                zc_data["algorithm"][i]["in"],
+                "%s::%s" % (plugin, i),
+                "plugins.%s.%s.%s"
+                % (
+                    plugin,
+                    zc_data["algorithm"][i]["file"],
+                    zc_data["algorithm"][i]["prototype"],
+                ),
+            )
+        )
+    if zc_data["init"]["open"]:
+        exec("import plugins.%s.%s" % (plugin, zc_data["init"]["file"]))
+        exec(
+            "plugins.%s.%s.%s("
+            % (plugin, zc_data["init"]["file"], zc_data["init"]["prototype"])
+            + "".join(
+                ("%s=%s," % (i, getit(zc_data["init"]["args"][i])))
+                for i in zc_data["init"]["args"]
+            )
+            + 'interaction=Interaction("%s"),iswindow=True)' % plugin
+        )
+
+
 # for i in range(20): treefile.insert("",0,str(i),text=str(i))
 
 
 def displaytree(data, opened):
     with open(os.path.join(projectpath, data["file"]), "rb") as f:
         treedata = pickle.load(f)
-    elbl = Label(mainf,text=getlang("elbl"),bg="white")
-    elbl.place(x=5,y=5)
-    rtll = Text(mainf,bg="white")
-    rtll.place(y=35,relwidth=1,relheight=0.4)
+    elbl = Label(mainf, text=getlang("elbl"), bg="white")
+    elbl.place(x=5, y=5)
+    rtll = Text(mainf, bg="white")
+    rtll.place(y=35, relwidth=1, relheight=0.4)
     rtll.insert(END, str(treedata))
     rtll.config(state=DISABLED)
     secuffr = Frame(mainf, bg="white")
@@ -278,7 +356,9 @@ def displaysktch(data, opened):
     global ismainfat
     ismainfat = False
     try:
-        sktchphoto = ImageTk.PhotoImage(Image.open(os.path.join(projectpath, data["file"])))
+        sktchphoto = ImageTk.PhotoImage(
+            Image.open(os.path.join(projectpath, data["file"]))
+        )
     except OSError as e:
         messagebox.showerror("AITD System", e)
         return
@@ -729,9 +809,13 @@ def importseq():
         global pjset
         global namespaces
         lstlst = [aitd.Sequence() for i in range(int(getnumrer.get()))]
-        aitd.readFile(
-            openent.get(), getattr(aitd.xerlist.ParserList, nowparser.get()), lstlst
-        )
+        if isPlugin(nowparser.get().split("::")[1]):
+            aitd.readFile(
+                openent.get(), getattr(aitd.xerlist.ParserList, nowparser.get()), lstlst
+            )
+        else:
+            ...
+            #TODO: HERE!
         flag = True
         for i in range(len(lstlst)):
             if lstlst[i].sequence == "":
@@ -1323,9 +1407,7 @@ def makesketch():
         with open(os.path.join(projectpath, namespaces[treee]["file"]), "rb") as f:
             treedata = pickle.load(f)
         spacenamet = str(int(round(time.time() * 1000)))
-        saveasname = os.path.join(
-            "cache", "sketch", spacenamet + rcnowpaerrrer.get()
-        )
+        saveasname = os.path.join("cache", "sketch", spacenamet + rcnowpaerrrer.get())
         getattr(aitd.xerlist.DisplayList, reer)(
             treedata[0],
             treedata[1],
@@ -1338,7 +1420,7 @@ def makesketch():
             "file": saveasname,
             "composition": namespaces[treee]["opposing"],
             "from": treee,
-            "renderer": reer
+            "renderer": reer,
         }
         namespnam = "sketch::" + spacenamet
         namespaces[namespnam] = foitdata
@@ -1348,7 +1430,12 @@ def makesketch():
         messagebox.showinfo("AITD System", getlang("successmake"))
         for i in mainf.winfo_children():
             i.destroy()
-        treefile.insert(treeske, 1, namespnam, text=pjset["sketch_list"][namespnam]["from"] + " @ " + namespnam)
+        treefile.insert(
+            treeske,
+            1,
+            namespnam,
+            text=pjset["sketch_list"][namespnam]["from"] + " @ " + namespnam,
+        )
         nowsthopen = ""
 
     openbutt = ttk.Button(openframe, text=getlang("startrn"), command=goforit)
@@ -1357,9 +1444,16 @@ def makesketch():
     root.update()
 
 
+def vscsetting():
+    global mainf
+    global namespaces
+    global pjset
+
+
 def selection(*args, item=False):
     global nowsthopen
     global ismainfat
+    global lists
     global namespaces
     # print(nowopen)
     if not nowopen:
@@ -1371,7 +1465,7 @@ def selection(*args, item=False):
             return
     # print(item)
     canseb = ["seq", "sketch", "ali", "tree"]
-    cansebb = ["rimpseq", "rcomprr", "rtreestree", "rsketch"]
+    cansebb = ["rimpseq", "rcomprr", "rtreestree", "rsketch", "vscsetting"]
     if item:
         nowtype = item.split("::")[0]
         if (nowtype in canseb) or (item in cansebb):
@@ -1403,6 +1497,20 @@ def selection(*args, item=False):
                 maketree()
             elif item == "rsketch":
                 makesketch()
+            elif item == "vscsetting":
+                vscsetting()
+        for zc_data in plugin_list:
+            if zc_data["refresh"]["open"]:
+                exec("import plugins.%s.%s" % (zc_data["name"], zc_data["refresh"]["file"]))
+                exec(
+                    "plugins.%s.%s.%s("
+                    % (zc_data["name"], zc_data["refresh"]["file"], zc_data["refresh"]["prototype"])
+                    + "".join(
+                        ("%s=%s," % (i, getit(zc_data["refresh"]["args"][i])))
+                        for i in zc_data["refresh"]["args"]
+                    )
+                    + 'interaction=Interaction("%s"),iswindow=True)' % zc_data["name"],
+                )
 
 
 openseqbut = ttk.Button(
