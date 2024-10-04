@@ -1,0 +1,48 @@
+{
+    "name": "plugin_test",
+    "author": {
+        "name": "distjr_",
+        "email": "870239526@qq.com"
+    },
+    "copyright": "Copyright (c) distjr_ 2024",
+    "settings": {
+        "plugin_test::isOutputDir": false,
+        "plugin_test::color": "plum"
+    },
+    "init": {
+        "open": true,
+        "file": "init",
+        "prototype": "main",
+        "args": {
+            "color": "@plugin_test::color",
+            "mainf": "#mainf",
+            "topf": "#topf",
+            "sidef": "#sidef",
+            "root": "#root"
+        }
+    },
+    "refresh": {
+        "open": true,
+        "file": "init",
+        "prototype": "main",
+        "args": {
+            "color": "@plugin_test::color",
+            "mainf": "#mainf",
+            "topf": "#topf",
+            "sidef": "#sidef",
+            "root": "#root"
+        }
+    },
+    "algorithm": {
+        "equivalence": {
+            "in": "MatrixList",
+            "file": "equivalence",
+            "prototype": "main",
+            "args": {
+                "inPlugin": true,
+                "dir": "#plugin_dir",
+                "isOutputDir": "@plugin_test::isOutputDir"
+            }
+        }
+    }
+}
