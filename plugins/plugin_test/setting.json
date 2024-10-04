@@ -40,7 +40,6 @@
             "prototype": "main",
             "args": {
                 "inPlugin": true,
-                "dir": "#plugin_dir",
                 "isOutputDir": "@plugin_test::isOutputDir"
             }
         }
