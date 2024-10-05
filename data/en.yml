@@ -4,7 +4,7 @@ createfile: Creating file
 filenotcreate: Could not create file
 notpjdict: Project directory not found.
 
-synerr: Syntax error!
+synErr: Syntax error!
 usage: Usage
 
 done: done.
