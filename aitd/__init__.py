@@ -153,7 +153,7 @@ if __name__ == "__main__":
     )
 
 
-def readFile(filename, parser, sequenceList):
+def readFile(filename, parser, sequenceList, isPlugin=False):
     # sequenceList = []
     try:
         with open(filename, "r") as file:
