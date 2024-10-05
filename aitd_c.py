@@ -589,9 +589,12 @@ while True:
                     Note("%s : list sequence/alignment/comparator/matrix/" % getWord("usage"))
             elif command[0] == "display":
                 try:
-                    tree = comma nd[1]
+                    tree = command[1]
                     disMet = command[2]
                     filetype = command[3]
+                    with open(os.path.join(programdict, "setting.json"),'r') as js:
+                        data = json.load(js)
+                        
                 except:
                     Error(getWord("synerr"))
                     Note("%s : display <tree> <display> <filetype>" % getWord("usage"))
