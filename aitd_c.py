@@ -185,7 +185,7 @@ while True:
         os.system("cls")
     elif command[0] == "setting":
         if len(command) < 3:
-            Error(getWord("synerr"))
+            Error(getWord("synErr"))
             Note("%s : setting <option> <value>" % getWord("usage"))
             continue
         if command[1] == "language":
@@ -198,7 +198,7 @@ while True:
             Error(getWord("notsetting"))
     elif command[0] == "new":
         if len(command) < 3:
-            Error(getWord("synerr"))
+            Error(getWord("synErr"))
             Note("%s : new <type> <name> [<parameter>]" % getWord("usage"))
             continue
         if command[1] == "project":
@@ -223,7 +223,7 @@ while True:
             mkfile(os.path.join(command[2], "setting.dat"))
             Note(getWord("pjcreated"))
         else:
-            Error(getWord("synerr"))
+            Error(getWord("synErr"))
             Note("%s : new <type> <name> [<parameter>]" % getWord("usage"))
             continue
     elif command[0] == "open":
@@ -240,7 +240,7 @@ while True:
         # try:
         #     nowProject = command[1]
         # except IndexError:
-        #     Error(getWord("synerr"))
+        #     Error(getWord("synErr"))
         #     Note("%s : open <name>" % getWord("usage"))
         #     continue
         try:
@@ -257,7 +257,7 @@ while True:
         elif command[1] == "off":
             debug = False
         else:
-            Error(getWord("synerr"))
+            Error(getWord("synErr"))
             Note("%s : debug [on|off]" % getWord("usage"))
             continue
     elif command[0] == "exit":
@@ -348,7 +348,7 @@ while True:
                             with open(programdict + name + ".seq", 'x') as f:
                                 f.write(seq.sequence)
                 else:
-                    Error(getWord("synerr"))
+                    Error(getWord("synErr"))
                     Note("%s : import <name> <file> [<parser>]" % getWord("usage"))
             elif command[0] == "species":
                 fullCommand = oriInput.split("\"")
@@ -356,7 +356,7 @@ while True:
                     speciesName = getName(fullCommand[1])
                     SpeciesList.extend(speciesName)
                 else:
-                    Error(getWord("synerr"))
+                    Error(getWord("synErr"))
                     Note("%s : species <name>" % getWord("usage"))
             elif command[0] == "add":
                 if len(command) == 3:
@@ -366,7 +366,7 @@ while True:
                         SeqMap[command[1]] = [...]
                         SeqMap[command[1]].extend(command[2])
                 else:
-                    Error(getWord("synerr"))
+                    Error(getWord("synErr"))
                     Note("%s : add <species> <name>" % getWord("usage"))
             elif command[0] == "del":
                 if len(command) == 2:
@@ -413,7 +413,7 @@ while True:
                             
                         json.dump(dicts, js)
                 else:
-                    Error(getWord("synerr"))
+                    Error(getWord("synErr"))
                     Note("%s : parameter set <object> <key> <value>" % getWord("usage"))
                     Note("%s : parameter get <object> <key>" % getWord("usage"))
             elif command[0] == "align":
@@ -553,7 +553,7 @@ while True:
                             with open(os.path.join(programdict, "data", "tree", name + "tree"), 'wb') as file:
                                 pickle.dump((lis1,lis2), file)
                 except:
-                    Error(getWord("synerr"))
+                    Error(getWord("synErr"))
                     Note("%s : tree <seqNum> <seq1> <seq2> <seq3>... [<parameter>]" % getWord("usage"))
                 
             elif command[0] == "correct":
@@ -566,15 +566,38 @@ while True:
                     pass
                 
             elif command[0] == "list":
-                with open(os.path.join(programdict, "setting.json"), 'r') as js:
-                    data = json.load(js.read())
-                    if command[1] == "seq":
-                        for key, val in data["sequence_list"].items():
-                            print(key, end=": ")
-                            print(val["name"])
-                    elif command[1] == "ali":
-                        pass
-
+                try:
+                    with open(os.path.join(programdict, "setting.json"), 'r') as js:
+                        data = json.load(js.read())
+                        if command[1] == "sequence":
+                            for key, val in data["sequence_list"].items():
+                                print(key, end=": ")
+                                print(val["name"], end = ", ")
+                                print("description: " + val["description"], end = ", ")
+                                print("from: ", val["from"])
+                        elif command[1] == "alignment":
+                            for key, val in data["alignment_list"].items():
+                                print(val["opposing"][0] + " and " + val["opposing"][1], end = " : ")
+                                print("algorithm: ", val["algorithm"], end=", ")
+                                print("file & data", val["file"] + " & ", val["data"])
+                        elif command[1] == "comparator":
+                            pass
+                        elif command[1] == "matrix":
+                            pass
+                except:
+                    Error(getWord("synErr"))
+                    Note("%s : list sequence/alignment/comparator/matrix/" % getWord("usage"))
+            elif command[0] == "display":
+                try:
+                    tree = command[1]
+                    disMet = command[2]
+                    filetype = command[3]
+                    with open(os.path.join(programdict, "setting.json"),'r') as js:
+                        data = json.load(js)
+                        
+                except:
+                    Error(getWord("synErr"))
+                    Note("%s : display <tree> <display> <filetype>" % getWord("usage"))
             ################################################################
             # HERE!!!!!!!!                                                 #
             ################################################################
