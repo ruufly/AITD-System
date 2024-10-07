@@ -129,3 +129,17 @@ startrn: 开始渲染
 typecc: 文件格式
 
 elbl: 系统发生树数据
+
+nse: 基础设置
+okay: 完成
+blang: 默认语言
+defaultComparator: 默认比较器
+defaultMatrix: 默认矩阵
+defaultGap: 默认空位罚分
+defaultPlanter: 默认建树算法
+changedone: 已修改完成！请重启软件以使设置生效。
+aisre: AI修正
+trt: 需要修正的树
+medde: 模型
+noalign: 没有找到序列 %s 与序列 %s 的比对数据
+hpd: 请参见./document内的文档
