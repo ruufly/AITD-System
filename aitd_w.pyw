@@ -28,9 +28,10 @@ from PIL import Image, ImageTk
 import yaml
 import aitd
 import shutil
-import pyglet
+# import pyglet
 import numpy as np
 import time
+# from importlib.machinery import SourceFileLoader
 
 # from copy import deepcopy
 import matplotlib.pyplot as plt
@@ -53,9 +54,9 @@ programdict = os.path.dirname(os.path.abspath(__file__))
 
 root.iconbitmap(os.path.join(programdict, "data", "icons", "icon.ico"))
 
-pyglet.font.add_file(
-    os.path.join(programdict, "data", "fonts", "SourceHanSansSC-Normal.otf")
-)
+# pyglet.font.add_file(
+#     os.path.join(programdict, "data", "fonts", "SourceHanSansSC-Normal.otf")
+# )
 # pyglet.font.add_file(os.path.join(programdict,"data","fonts","OPPOSans-Regular.ttf"))
 
 
@@ -2088,7 +2089,7 @@ def abouabout(*args):
     aboutpage.configure(bg="white")
     aboutpage.resizable(False, False)
     Label(
-        aboutpage, text="AITD System", bg="white", font=("思源黑体 Normal", 25)
+        aboutpage, text="AITD System", bg="white", font=("Arial", 25)
     ).pack()
     Label(
         aboutpage,
@@ -2106,13 +2107,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.""",
         bg="white",
-        font=("思源黑体 Normal", 8),
+        font=("Arial", 8),
         justify="left",
     ).pack()
     Label(
         aboutpage,
         text="To see licenses for other works used in this project, please check .\\licenses\\ !",
-        font=("思源黑体 Normal", 8),
+        font=("Arial", 8),
         bg="white",
         fg="red",
     ).pack()
@@ -2124,7 +2125,7 @@ def settting(*args):
     settingpage.configure()
     # settingpage.resizable(False, False)
     Label(
-        settingpage, text=getlang("setting"), font=("思源黑体 Normal", 25)
+        settingpage, text=getlang("setting"), font=("Arial", 25)
     ).place(x=0,y=0)
     notebook = ttk.Notebook(settingpage)
 
