@@ -1,6 +1,7 @@
 import os, sys
 from . import error
 from . import xerlist
+from . import model
 import matplotlib.pyplot as plt
 import numpy as np
 import copy
@@ -153,7 +154,7 @@ if __name__ == "__main__":
     )
 
 
-def readFile(filename, parser, sequenceList, isPlugin=False):
+def readFile(filename, parser, sequenceList):
     # sequenceList = []
     try:
         with open(filename, "r") as file:

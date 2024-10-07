@@ -43,11 +43,12 @@ class MatrixList(object):
 
     def add(self, name, matrix):
         setattr(self, name, matrix)
-        
+
+
 class ModelList(object):
     def __init__(self):
         pass
-    
+
     def add(self, name, model):
         setattr(self, name, model)
 
