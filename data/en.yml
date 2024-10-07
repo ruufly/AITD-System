@@ -129,3 +129,17 @@ startrn: Start rendering
 typecc: File type
 
 elbl: Tree data
+
+nse: Basic Settings
+okay: OK
+blang: Default Language
+defaultComparator: Default Comparator
+defaultMatrix: Default Matrix
+defaultGap: Default Gap
+defaultPlanter: Default Planter
+changedone: Modified completed! Please restart the software for the settings to take effect.
+aisre: AI correction
+trt: Trees need to be corrected
+medde: Model
+noalign: No alignment data between %s and %s
+hpd: Please refer to the documents in ./document
