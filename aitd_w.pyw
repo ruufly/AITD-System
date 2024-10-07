@@ -158,9 +158,11 @@ with open(os.path.join(programdict, "data", "setting.dat"), "rb") as f:
             "defaultComparator": "ComparatorList::needleman-wunsch",
             "defaultMatrix": "MatrixList::transition-transversion",
             "defaultGap": -2,
+            "defaultPlanter": "TreePlanterList::UPGMA"
         }
         with open(os.path.join(programdict, "data", "setting.dat"), "wb") as f:
             pickle.dump(config, f)
+
 
 with open(os.path.join(programdict, "data", "en.yml"), "r", encoding="utf-8") as f:
     endata = yaml.safe_load(f.read())
@@ -169,6 +171,7 @@ langdata = endata
 defaultComparator = config["defaultComparator"]
 defaultMatrix = config["defaultMatrix"]
 defaultGap = config["defaultGap"]
+defaultPlanter = config["defaultPlanter"]
 
 
 def getlang(word):
@@ -1557,10 +1560,216 @@ def makesketch():
     root.update()
 
 
-def vscsetting():
+# def rvscsetting():
+#     global mainf
+#     global namespaces
+#     global pjset
+
+def rai():
     global mainf
     global namespaces
+    global nowsthopen
     global pjset
+    global symbolchecked
+    global symbolunchecked
+    clblf = Frame(mainf, bg="white")
+
+    Label(clblf, text=getlang("trt"), bg="white").place(x=5)
+
+    clblf.place(relwidth=1, relheight=0.05, relx=0, rely=0)
+
+    colmainf = Frame(mainf)
+    treetfile = ttk.Treeview(colmainf)
+    treetfile.tag_configure("fggrey", foreground="grey")
+
+    tvbtf = ttk.Scrollbar(colmainf, orient=VERTICAL, command=treetfile.yview)
+    tvbtf.pack(side=RIGHT, fill=Y)
+    tvbtfx = ttk.Scrollbar(colmainf, orient=HORIZONTAL, command=treetfile.xview)
+    tvbtfx.pack(side=BOTTOM, fill=X)
+
+    treetfile.config(yscrollcommand=tvbtf.set)
+    treetfile.config(xscrollcommand=tvbtfx.set)
+
+    # treetfile.heading(text=getlang("treetfileseq"))
+    # treetfile.heading("abstract",text=getlang("treetfileab"))
+
+    treetfile.tag_configure("checked", image=symbolchecked)
+    treetfile.tag_configure("unchecked", image=symbolunchecked)
+
+    def on_checkbox_changed(*args):
+        item_id = treetfile.focus()
+        checkbox_state = treetfile.item(item_id, "tag")
+        if checkbox_state[0] == "checked":
+            treetfile.item(item_id, tags=("unchecked",))
+        else:
+            treetfile.item(item_id, tags=("checked",))
+
+    seqs, rs = [], 0
+    for i in pjset["tree_list"]:
+        # with open(os.path.join(projectpath, pjset["sequence_list"][i]["file"])) as f:
+        #     kseq = f.read()
+        seqs.append(treetfile.insert("", 0, text=i, values=i))
+        treetfile.item(seqs[rs], tags=("unchecked",))
+        rs += 1
+
+    # print(seqs)
+    treetfile.bind("<<TreeviewSelect>>", on_checkbox_changed)
+
+    treetfile.pack(fill=BOTH, expand=1)
+
+    colmainf.place(relwidth=1, relheight=0.5, relx=0, rely=0.05)
+
+    # rcnxtf = Frame(mainf, bg="white")
+
+    # runins = [getlang("autoalign")]  # , getlang("saveautoalign")]
+
+    # global boxes
+    # boxes = []
+    # for i in range(len(runins)):
+    #     boxes.append(BooleanVar())
+    #     # boxes[i].set(True)
+    #     cbt = Checkbutton(
+    #         rcnxtf,
+    #         text=runins[i],
+    #         variable=boxes[i],
+    #         bg="white",
+    #         onvalue=True,
+    #         offvalue=False,
+    #     )
+    #     cbt.grid(column=0, row=i, sticky=W)
+    #     boxes[i].set(True)
+    #     print(boxes[i].get())
+
+    # rcnxtf.place(relwidth=1, relheight=0.1, relx=0, rely=0.55)
+
+    algorf = Frame(mainf, bg="white")
+
+    Label(algorf, text=getlang("medde"), bg="white").place(x=5, y=0)
+
+    with open(os.path.join(programdict,"models","model_list.json"),"r") as f:
+        aaligncholl = json.load(f)
+
+    global vttsv
+    vttsv = StringVar()
+    aseq1cb = ttk.Combobox(algorf, state="readonly", textvariable=vttsv)
+    aseq1cb["values"] = tuple(aaligncholl)
+    aseq1cb.current(0)
+    aseq1cb.place(relx=0.2, y=0, relwidth=0.55)
+
+    algorf.place(relwidth=1, relheight=0.05, relx=0, rely=0.65)
+
+    def submitmit(*args):
+        global vttsv
+        global pjset
+        global nowsthopen
+        global namespaces
+        # for i in boxes:
+        #     print(i.get())
+        needmake = []
+        for i in treetfile.get_children():
+            if treetfile.item(i, "tag") == ("checked",):
+                needmake.append(treetfile.item(i, "value")[0])
+        ctneedmake = []
+        eucmake = []
+        for i in needmake:
+            opp = namespaces[i]["opposing"]
+            kmat = []
+            keucm = []
+            for qrc1 in opp:
+                rkmt = []
+                with open(os.path.join(projectpath,namespaces[qrc1]["file"]),"r") as f:
+                    keucm.append(len(f.read()))
+                for qrc2 in opp:
+                    if qrc1 == qrc2:
+                        rkmt.append(0)
+                        continue
+                    rc1 = qrc1.split("::")[1]
+                    rc2 = qrc2.split("::")[1]
+                    if "ali::%s-%s" % (rc1,rc2) in namespaces:
+                        with open(os.path.join(projectpath,namespaces["ali::%s-%s" % (rc1,rc2)]["data"]),"r") as f:
+                            rkmt.append(int(f.read().split()[1]))
+                    elif "ali::%s-%s" % (rc2,rc1) in namespaces:
+                        with open(os.path.join(projectpath,namespaces["ali::%s-%s" % (rc2,rc1)]["data"]),"r") as f:
+                            rkmt.append(int(f.read().split()[1]))
+                    else:
+                        messagebox.showerror("AITD System", getlang("noalign") % (rc1,rc2))
+                        return
+                kmat.append(rkmt)
+            # print(kmat)
+            ctneedmake.append(aitd.model.sdf(np.array(kmat)).tolist())
+            eucmake.append(keucm)
+        rkeucmake = []
+        for i in range(len(eucmake[0])):
+            k = 0
+            for j in range(len(eucmake)):
+                k += eucmake[j][i]
+            k /= len(eucmake)
+            rkeucmake.append(k)
+        nkm = len(rkeucmake)
+        itl = aitd.model.runmodel(os.path.join(programdict,"models",vttsv.get()+".model"),ctneedmake,rkeucmake)
+        ctl = [[0] * nkm for i in range(nkm)]
+        m = 0
+        for i in range(len(ctl)):
+            for j in range(len(ctl[i])):
+                ctl[i][j] = itl[m]
+                m += 1
+        ee = []
+        for i in range(len(ctl)):
+            for j in range(len(ctl[i])):
+                if i == j:
+                    ctl[i][j] = 0
+                ctl[i][j] = abs(ctl[i][j])
+        for i in range(nkm):
+            ee.append(aitd.Sequence(sequence="A"*int(rkeucmake[0])))
+        nowtre = getattr(aitd.xerlist.TreePlanterList,config["defaultPlanter"])(ee,ctl)
+        spacenamet = str(int(round(time.time() * 1000)))
+        with open(os.path.join(projectpath, "data", "correction", "%s.tree" % spacenamet),"wb") as f:
+            pickle.dump(nowtre, f)
+        data = {
+            "file": os.path.join("data", "correction", "%s.tree" % spacenamet),
+            "opposing": ["..." for i in range(nkm)],
+            "algorithm": config["defaultPlanter"]
+        }
+        namespaces["tree::%s" % spacenamet] = data
+        pjset["tree_list"]["tree::%s" % spacenamet] = data
+        with open(os.path.join(projectpath, "setting.json"),"w") as f:
+            json.dump(pjset, f)
+        messagebox.showinfo("AITD System", getlang("successmake"))
+        try:
+            treefile.insert(
+                treestree,
+                1,
+                "tree::" + spacenamet,
+                text=spacenamet
+            )
+        except Exception:
+            pass
+        for i in mainf.winfo_children():
+            i.destroy()
+        nowsthopen = ""
+        # print(nowtre)
+        # print(ctneedmake)
+        # print(rkeucmake)
+        # aitd.model
+        #     seqe = aitd.Sequence()
+        #     with open(os.path.join(projectpath, namespaces[i]["file"]), "r") as f:
+        #         seqe.sequence = f.read()
+        #     with open(os.path.join(projectpath, namespaces[i]["metadata"]), "r") as f:
+        #         seqe.metadata = f.read()
+        #     seqe.type = namespaces[i]["type"]
+        #     seqe.name = i
+        #     ctneedmake.append(seqe)
+        # if len(needmake) < 3:
+        #     messagebox.showwarning("AITD System", getlang("needmorethanthree"))
+        #     return
+
+    buttf = Frame(mainf, bg="white")
+
+    buttt = ttk.Button(buttf, text=getlang("submittree"), command=submitmit)#, command=submittree)
+    buttt.place(relx=0.8)
+
+    buttf.place(relwidth=1, relheight=0.1, relx=0, rely=0.7)
+
 
 
 def selection(*args, item=False):
@@ -1578,7 +1787,7 @@ def selection(*args, item=False):
             return
     # print(item)
     canseb = ["seq", "sketch", "ali", "tree"]
-    cansebb = ["rimpseq", "rcomprr", "rtreestree", "rsketch", "vscsetting"]
+    cansebb = ["rimpseq", "rcomprr", "rtreestree", "rsketch", "vscsetting", "rkai"]
     if item:
         nowtype = item.split("::")[0]
         if (nowtype in canseb) or (item in cansebb):
@@ -1610,8 +1819,10 @@ def selection(*args, item=False):
                 maketree()
             elif item == "rsketch":
                 makesketch()
-            elif item == "vscsetting":
-                vscsetting()
+            elif item == "rkai":
+                rai()
+            # elif item == "vscsetting":
+            #     rvscsetting()
         for i in plugin_list:
             zc_data = plugin_list[i]
             if zc_data["refresh"]["open"]:
@@ -1640,10 +1851,10 @@ openseqbut = ttk.Button(
     command=lambda *args: selection(*args, item="rimpseq"),
 )
 openseqbut.place(rely=0.81, relx=0.05, relwidth=0.4)
-plibut = ttk.Button(
-    sidef, text=getlang("plibut"), command=lambda *args: selection(*args, item="pict")
-)
-plibut.place(rely=0.81, relx=0.55, relwidth=0.4)
+# plibut = ttk.Button(
+#     sidef, text=getlang("plibut"), command=lambda *args: selection(*args, item="pict")
+# )
+# plibut.place(rely=0.81, relx=0.55, relwidth=0.4)
 makealib = ttk.Button(
     sidef,
     text=getlang("makealib"),
@@ -1661,7 +1872,13 @@ gotosre = ttk.Button(
     text=getlang("gotosre"),
     command=lambda *args: selection(*args, item="rsketch"),
 )
-gotosre.place(rely=0.91, relx=0.05, relwidth=0.4)
+gotosre.place(rely=0.81, relx=0.55, relwidth=0.4)
+aisre = ttk.Button(
+    sidef,
+    text=getlang("aisre"),
+    command=lambda *args: selection(*args, item="rkai"),
+)
+aisre.place(rely=0.91, relx=0.05, relwidth=0.9)
 
 treefile.bind("<ButtonRelease-1>", selection)
 
@@ -1725,7 +1942,7 @@ def openpj(*args, pp=""):
         pjset = json.load(f)
     global pjsetting, vscsetting, impseq, impty, treeske, smpty, treestree, tmpty, aicr, osjr, artd, esep, pict, pmpty, comprr
     # symbolplugin
-    pict = treefile.insert("", 0, "pict", text=getlang("pict"), image=symbolplugin)
+    # pict = treefile.insert("", 0, "pict", text=getlang("pict"), image=symbolplugin)
     # pmpty = treefile.insert(
     #     pict,
     #     1,
@@ -1734,16 +1951,16 @@ def openpj(*args, pp=""):
     #     value=f"{pict}-{getlang('pmpty')}",
     #     tags=("fggrey"),
     # )
-    aicr = treefile.insert("", 0, "aicr", text=getlang("aicr"), image=symbolcomputer)
-    osjr = treefile.insert(
-        aicr, 1, "osjr", text=getlang("osjr"), value=f"{aicr}-{getlang('osjr')}"
-    )
-    artd = treefile.insert(
-        aicr, 1, "artd", text=getlang("artd"), value=f"{aicr}-{getlang('artd')}"
-    )
-    esep = treefile.insert(
-        aicr, 1, "esep", text=getlang("esep"), value=f"{aicr}-{getlang('esep')}"
-    )
+    # aicr = treefile.insert("", 0, "aicr", text=getlang("aicr"), image=symbolcomputer)
+    # osjr = treefile.insert(
+    #     aicr, 1, "osjr", text=getlang("osjr"), value=f"{aicr}-{getlang('osjr')}"
+    # )
+    # artd = treefile.insert(
+    #     aicr, 1, "artd", text=getlang("artd"), value=f"{aicr}-{getlang('artd')}"
+    # )
+    # esep = treefile.insert(
+    #     aicr, 1, "esep", text=getlang("esep"), value=f"{aicr}-{getlang('esep')}"
+    # )
     treestree = treefile.insert(
         "", 0, "treestree", text=getlang("treestree"), image=symboltree
     )
@@ -1778,16 +1995,16 @@ def openpj(*args, pp=""):
     #     value=f"{impseq}-{getlang('impty')}",
     #     tags=("fggrey"),
     # )
-    pjsetting = treefile.insert(
-        "", 0, "pjsetting", text=getlang("pjsetting"), image=symbolsetting
-    )
-    vscsetting = treefile.insert(
-        pjsetting,
-        1,
-        "vscsetting",
-        text=getlang("vscsetting"),
-        value=f"{pjsetting}-{getlang('vscsetting')}",
-    )
+    # pjsetting = treefile.insert(
+    #     "", 0, "pjsetting", text=getlang("pjsetting"), image=symbolsetting
+    # )
+    # vscsetting = treefile.insert(
+    #     pjsetting,
+    #     1,
+    #     "vscsetting",
+    #     text=getlang("vscsetting"),
+    #     value=f"{pjsetting}-{getlang('vscsetting')}",
+    # )
 
     root.update()
 
@@ -1901,6 +2118,88 @@ limitations under the License.""",
     ).pack()
 
 
+def settting(*args):
+    settingpage = Toplevel(root)
+    settingpage.geometry("450x350")
+    settingpage.configure()
+    # settingpage.resizable(False, False)
+    Label(
+        settingpage, text=getlang("setting"), font=("思源黑体 Normal", 25)
+    ).place(x=0,y=0)
+    notebook = ttk.Notebook(settingpage)
+
+    normalf = Frame(notebook)
+    # defaultComparator = config["defaultComparator"]
+    # defaultMatrix = config["defaultMatrix"]
+    # defaultGap = config["defaultGap"]
+
+    Label(normalf,text=getlang("blang")).place(relx=0,y=0)
+    blang = Entry(normalf)
+    blang.insert(tkinter.END, config["language"])
+    blang.place(relx=0.5,y=0,relwidth=0.5)
+    Label(normalf,text=getlang("defaultComparator")).place(relx=0,y=20)
+    defaulltComparator = Entry(normalf)
+    defaulltComparator.insert(tkinter.END, config["defaultComparator"])
+    defaulltComparator.place(relx=0.5,y=20,relwidth=0.5)
+    Label(normalf,text=getlang("defaultMatrix")).place(relx=0,y=40)
+    defaulltComparyator = Entry(normalf)
+    defaulltComparyator.insert(tkinter.END, config["defaultMatrix"])
+    defaulltComparyator.place(relx=0.5,y=40,relwidth=0.5)
+    Label(normalf,text=getlang("defaultGap")).place(relx=0,y=60)
+    defaulltComparyattor = Entry(normalf)
+    defaulltComparyattor.insert(tkinter.END, config["defaultGap"])
+    defaulltComparyattor.place(relx=0.5,y=60,relwidth=0.5)
+    Label(normalf,text=getlang("defaultPlanter")).place(relx=0,y=80)
+    defaulltComparyatartor = Entry(normalf)
+    defaulltComparyatartor.insert(tkinter.END, config["defaultPlanter"])
+    defaulltComparyatartor.place(relx=0.5,y=80,relwidth=0.5)
+
+    notebook.add(normalf,text=getlang("nse"))
+
+    ecf = {}
+    rcf = {}
+    for i in plugin_list:
+        ecf[i] = Frame(notebook)
+        rcf[i] = {}
+        kett = 0
+        for j in plugin_list[i]["settings"]:
+            Label(ecf[i], text=j).place(relx=0, y=20*kett)
+            rcf[i][j] = Entry(ecf[i])
+            rcf[i][j].insert(tkinter.END, plugin_list[i]["settings"][j])
+            rcf[i][j].place(relx=0.5, y=20*kett,relwidth=0.5)
+            kett += 1
+        notebook.add(ecf[i],text=i)
+
+    notebook.place(relx=0,rely=0.15,relwidth=1,relheight=0.75)
+
+    def okay(*args):
+        with open(os.path.join(programdict,"data","setting.dat"),"wb") as f:
+            pickle.dump(
+                {
+                    "language": blang.get(),
+                    "defaultComparator": defaulltComparator.get(),
+                    "defaultMatrix": defaulltComparyator.get(),
+                    "defaultGap": int(defaulltComparyattor.get()),
+                    "defaultPlanter": defaulltComparyatartor.get()
+                },
+                f,
+            )
+        for i in plugin_list:
+            for j in plugin_list[i]["settings"]:
+                plugin_list[i]["settings"][j] = rcf[i][j].get()
+        for i in plugin_list:
+            with open(os.path.join(programdict, "plugins", i, "setting.json"), "w") as f:
+                json.dump(plugin_list[i], f)
+        messagebox.showinfo("AITD System",getlang("changedone"))
+        settingpage.destroy()
+
+    yesb = ttk.Button(settingpage,text=getlang("okay"),command=okay)
+    yesb.place(relx=0.8,rely=0.92)
+
+
+def helpdoc(*args):
+    messagebox.showinfo("AITD System",getlang("hpd"))
+
 menu = tkinter.Menu(root)
 
 filesubmenu = tkinter.Menu(menu, tearoff=0)
@@ -1918,14 +2217,14 @@ filesubmenu.add_command(label=getlang("openpj"), accelerator="Ctrl+O", command=o
 # filesubmenu.add_separator()
 # filesubmenu.add_command(label=getlang("copypj"), accelerator="Ctrl+Shift+S")
 filesubmenu.add_separator()
-filesubmenu.add_command(label=getlang("setting"), accelerator="Ctrl+S")
+filesubmenu.add_command(label=getlang("setting"), accelerator="Ctrl+S", command=settting)
 
 
 helpsubmenu = tkinter.Menu(menu, tearoff=0)
 helpsubmenu.add_command(
     label=getlang("about_about"), accelerator="Ctrl+H", command=abouabout
 )
-helpsubmenu.add_command(label=getlang("helpdoc"), accelerator="Ctrl+D")
+helpsubmenu.add_command(label=getlang("helpdoc"), accelerator="Ctrl+D", command=helpdoc)
 
 menu.add_cascade(label=getlang("file"), menu=filesubmenu)
 menu.add_cascade(label=getlang("help"), menu=helpsubmenu)
@@ -1933,11 +2232,14 @@ menu.add_cascade(label=getlang("help"), menu=helpsubmenu)
 
 root.config(menu=menu)
 
+root.bind("<Control-n>", newpj)
 root.bind("<Control-o>", openpj)
+root.bind("<Control-s>", settting)
 root.bind("<Control-h>", abouabout)
+root.bind("<Control-d>", helpdoc)
 # root.bind("<Control-Shift-s>",copypj)
 # root.bind("<Control-Shift-o>",lambda *args: selection(*args, item="pict"))
 
-openpj(pp="C:\\Users\\87023\\OneDrive\\科创大赛\\AITD System\\test")
+# openpj(pp="C:\\Users\\87023\\OneDrive\\科创大赛\\test")
 
 root.mainloop()
