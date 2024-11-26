@@ -6,7 +6,7 @@ def makecolor(master, color):
     for i in master.winfo_children():
         makecolor(i, color)
 
-
+# "plugin_test::color": "plum"
 def main(interaction, iswindow, mainf, topf, sidef, root, color):
     # interaction.Note("You has installed the plugin named \"plugin_test\" and have fun!")
     if iswindow:

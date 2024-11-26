@@ -6,8 +6,8 @@
     },
     "copyright": "Copyright (c) distjr_ 2024",
     "settings": {
-        "plugin_test::isOutputDir": false,
-        "plugin_test::color": "plum"
+        "plugin_test::isOutputDir": "false",
+        "plugin_test::color": "white"
     },
     "init": {
         "open": true,
@@ -39,7 +39,7 @@
             "file": "equivalence",
             "prototype": "main",
             "args": {
-                "inPlugin": true,
+                "inPlugin": "true",
                 "isOutputDir": "@plugin_test::isOutputDir"
             }
         }
