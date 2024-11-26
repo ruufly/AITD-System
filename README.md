@@ -12,13 +12,21 @@ _河南省青少年科技创新大赛参赛作品_
     同时，本系统包括了插件系统，这使得用户可以自定义需要的序列比对与建树算法，可扩展性更强。
     该系统的综合能力优于目前市面上的几款解决方案，使物种演化路径的推断过程变得更加便利、准确，对相关的科研工作可能会起到推进作用。
 
-第一作者：
+第一作者 First author：
 - [distjr_](https://github.com/ruufly)
   
-共同作者：
+共同作者 Co-authors：
 - [dty_dirt](https://github.com/dytdirt)
 - [hz]()
-<!-- - [和Miku一起打歌]() -->
-<!-- - [Qumu_android](https://github.com/bzy_080408) -->
 
-单位：河南科技大学附属高级中学(周山校区), 471031
+
+训练数据 Training data：
+[AITD-training](https://github.com/ruufly/AITD-training)
+
+论文 Paper：
+[AITD-thesis](https://github.com/ruufly/AITD-thesis)
+
+
+单位 Author's organization：
+河南科技大学附属高级中学(周山校区), 471031
+The High School Affiliated to University of Science & Technology Henan
